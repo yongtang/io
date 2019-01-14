@@ -23,6 +23,7 @@ import os
 from tensorflow.python.platform import test
 
 from tensorflow_io.hadoop.python.ops import hadoop_dataset_ops
+from tensorflow.python.data.ops import dataset_ops
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
@@ -48,7 +49,7 @@ class SequenceFileDatasetTest(test.TestCase):
 
     dataset = hadoop_dataset_ops.SequenceFileDataset(filenames).repeat(
         num_repeats)
-    iterator = dataset.make_initializable_iterator()
+    iterator = dataset_ops.make_initializable_iterator(dataset)
     init_op = iterator.initializer
     get_next = iterator.get_next()
 
