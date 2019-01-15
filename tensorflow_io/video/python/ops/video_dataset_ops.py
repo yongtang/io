@@ -21,6 +21,7 @@ import os
 
 from tensorflow.python.data.ops import dataset_ops
 from tensorflow.python.data.util import nest
+from tensorflow.python.data.util import structure
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
@@ -63,9 +64,14 @@ class VideoDataset(dataset_ops.DatasetSource):
     Args:
       filenames: A `tf.string` tensor containing one or more filenames.
     """
-    super(VideoDataset, self).__init__()
     self._filenames = ops.convert_to_tensor(
         filenames, dtype=dtypes.string, name="filenames")
+    super(VideoDataset, self).__init__(self._as_variant_tensor())
+
+  @property
+  def _element_structure(self):
+    return structure.convert_legacy_structure(
+        self.output_types, self.output_shapes, self.output_classes)
 
   def _as_variant_tensor(self):
     return video_ops.video_dataset(self._filenames)
