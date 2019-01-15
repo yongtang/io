@@ -23,6 +23,7 @@ import os
 from tensorflow.python.platform import test
 
 from tensorflow_io.image.python.ops import image_dataset_ops
+from tensorflow.python.data.ops import dataset_ops
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
@@ -55,7 +56,7 @@ class ImageDatasetTest(test.TestCase):
 
     dataset = image_dataset_ops.WebPDataset(filenames).repeat(
         num_repeats)
-    iterator = dataset.make_initializable_iterator()
+    iterator = dataset_ops.make_initializable_iterator(dataset)
     init_op = iterator.initializer
     get_next = iterator.get_next()
 
