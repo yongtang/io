@@ -26,6 +26,7 @@ import struct
 import six
 
 from tensorflow.python.data.ops import dataset_ops
+from tensorflow.python.data.util import structure
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
@@ -741,8 +742,6 @@ class IgniteDataset(dataset_ops.DatasetSource):
       cert_password: Password to be used if the private key is encrypted and a
         password is necessary.
     """
-    super(IgniteDataset, self).__init__()
-
     if not schema_host:
         schema_host = host
     if not schema_port:
@@ -767,6 +766,12 @@ class IgniteDataset(dataset_ops.DatasetSource):
         self.cache_type.to_permutation(),
         dtype=dtypes.int32,
         name="permutation")
+    super(IgniteDataset, self).__init__(self._as_variant_tensor())
+
+  @property
+  def _element_structure(self):
+    return structure.convert_legacy_structure(
+        self.output_types, self.output_shapes, self.output_classes)
 
   def _as_variant_tensor(self):
     return ignite_ops.ignite_dataset(self.cache_name, self.host, self.port,
