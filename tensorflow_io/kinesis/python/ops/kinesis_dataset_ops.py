@@ -20,6 +20,7 @@ from __future__ import print_function
 import os
 
 from tensorflow.python.data.ops import dataset_ops
+from tensorflow.python.data.util import structure
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
@@ -73,7 +74,6 @@ class KinesisDataset(dataset_ops.DatasetSource):
       interval: The interval for the Kinesis Client to wait before
         it tries to get records again (in millisecond).
     """
-    super(KinesisDataset, self).__init__()
     self._stream = ops.convert_to_tensor(
         stream, dtype=dtypes.string, name="stream")
     self._shard = ops.convert_to_tensor(
@@ -82,6 +82,12 @@ class KinesisDataset(dataset_ops.DatasetSource):
         read_indefinitely, dtype=dtypes.bool, name="read_indefinitely")
     self._interval = ops.convert_to_tensor(
         interval, dtype=dtypes.int64, name="interval")
+    super(KinesisDataset, self).__init__(self._as_variant_tensor())
+
+  @property
+  def _element_structure(self):
+    return structure.convert_legacy_structure(
+        self.output_types, self.output_shapes, self.output_classes)
 
   def _as_variant_tensor(self):
     return kinesis_ops.kinesis_dataset(
