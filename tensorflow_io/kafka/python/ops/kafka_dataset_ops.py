@@ -20,6 +20,7 @@ from __future__ import print_function
 import os
 
 from tensorflow.python.data.ops import dataset_ops
+from tensorflow.python.data.util import structure
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
@@ -51,7 +52,6 @@ class KafkaDataset(dataset_ops.DatasetSource):
       timeout: The timeout value for the Kafka Consumer to wait
                (in millisecond).
     """
-    super(KafkaDataset, self).__init__()
     self._topics = ops.convert_to_tensor(
         topics, dtype=dtypes.string, name="topics")
     self._servers = ops.convert_to_tensor(
@@ -61,6 +61,12 @@ class KafkaDataset(dataset_ops.DatasetSource):
     self._eof = ops.convert_to_tensor(eof, dtype=dtypes.bool, name="eof")
     self._timeout = ops.convert_to_tensor(
         timeout, dtype=dtypes.int64, name="timeout")
+    super(KafkaDataset, self).__init__(self._as_variant_tensor())
+
+  @property
+  def _element_structure(self):
+    return structure.convert_legacy_structure(
+        self.output_types, self.output_shapes, self.output_classes)
 
   def _as_variant_tensor(self):
     return kafka_ops.kafka_dataset(self._topics, self._servers,
