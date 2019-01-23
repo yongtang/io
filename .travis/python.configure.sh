@@ -49,6 +49,6 @@ chmod +x bazel-${BAZEL_VERSION}-installer-${BAZEL_OS}-x86_64.sh
 ./bazel-${BAZEL_VERSION}-installer-${BAZEL_OS}-x86_64.sh
 rm -f bazel-${BAZEL_VERSION}-installer-${BAZEL_OS}-x86_64.sh
 # Install tensorflow
-pip install tensorflow==1.12.0
+pip install tf-nightly
 # Configure TensorFlow
 ./configure.sh
