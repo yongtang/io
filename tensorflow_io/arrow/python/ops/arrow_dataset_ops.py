@@ -20,7 +20,7 @@ from __future__ import print_function
 import io
 
 from tensorflow.python.data.ops import dataset_ops
-from tensorflow.python.data.util import nest
+from tensorflow.python.data.util import nest, structure
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import load_library
@@ -91,6 +91,12 @@ class ArrowBaseDataset(dataset_ops.DatasetSource):
     self._output_shapes = output_shapes or \
         nest.map_structure(
             lambda _: tensor_shape.TensorShape(None), self._output_types)
+    super(ArrowBaseDataset, self).__init__(self._as_variant_tensor())
+
+  @property
+  def _element_structure(self):
+    return structure.convert_legacy_structure(
+        self.output_types, self.output_shapes, self.output_classes)
 
   @property
   def output_classes(self):
@@ -129,7 +135,6 @@ class ArrowDataset(ArrowBaseDataset):
                      infer partial
     """
     import pyarrow as pa
-    super(ArrowDataset, self).__init__(columns, output_types, output_shapes)
     if isinstance(record_batches, pa.RecordBatch):
       record_batches = [record_batches]
     assert record_batches
@@ -142,6 +147,7 @@ class ArrowDataset(ArrowBaseDataset):
         buf.getvalue(),
         dtype=dtypes.string,
         name="serialized_batches")
+    super(ArrowDataset, self).__init__(columns, output_types, output_shapes)
 
   def _as_variant_tensor(self):
     return arrow_ops.arrow_dataset(
@@ -192,13 +198,14 @@ class ArrowFeatherDataset(ArrowBaseDataset):
       output_shapes: TensorShapes of the output tensors or None to
                      infer partial
     """
-    super(ArrowFeatherDataset, self).__init__(columns,
-                                              output_types,
-                                              output_shapes)
     self._filenames = ops.convert_to_tensor(
         filenames,
         dtype=dtypes.string,
         name="filenames")
+    super(ArrowFeatherDataset, self).__init__(
+        columns,
+        output_types,
+        output_shapes)
 
   def _as_variant_tensor(self):
     return arrow_ops.arrow_feather_dataset(
@@ -245,13 +252,14 @@ class ArrowStreamDataset(ArrowBaseDataset):
       output_shapes: TensorShapes of the output tensors or None to
                      infer partial
     """
-    super(ArrowStreamDataset, self).__init__(columns,
-                                             output_types,
-                                             output_shapes)
     self._host = ops.convert_to_tensor(
         host,
         dtype=dtypes.string,
         name="host")
+    super(ArrowStreamDataset, self).__init__(
+        columns,
+        output_types,
+        output_shapes)
 
   def _as_variant_tensor(self):
     return arrow_ops.arrow_stream_dataset(

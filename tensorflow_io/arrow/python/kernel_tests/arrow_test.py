@@ -34,6 +34,7 @@ except ImportError as e:
 _have_pyarrow = _pyarrow_requirement_message is None
 
 from tensorflow_io.arrow.python.ops import arrow_dataset_ops
+from tensorflow.python.data.ops import dataset_ops
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.platform import test
@@ -94,7 +95,7 @@ class ArrowDatasetTest(test.TestCase):
         [tensor_shape.TensorShape([None]) for _ in cls.list_dtypes])
 
   def run_test_case(self, dataset, case_data):
-    iterator = dataset.make_one_shot_iterator()
+    iterator = dataset_ops.make_one_shot_iterator(dataset)
     next_element = iterator.get_next()
 
     def is_float(dtype):
