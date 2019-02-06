@@ -18,6 +18,8 @@ limitations under the License.
 #include "tensorflow/core/lib/io/buffered_inputstream.h"
 #include "tensorflow/core/platform/file_system.h"
 
+#include "unzip.h"
+
 namespace tensorflow {
 namespace data {
 namespace {
@@ -191,13 +193,13 @@ class NumpyFileDatasetOp : public DatasetOpKernel {
       : DatasetOpKernel(ctx) {
     OP_REQUIRES_OK(ctx, ctx->GetAttr("output_types", &output_types_));
     // TODO (yongtang): remove restriction of output_types_?
-    OP_REQUIRES(ctx, output_types_.size() == 1, errors::InvalidArgument("The number of elements in `output_types_` must be one."));
-    for (const DataType& dt : output_types_) {
-      OP_REQUIRES(ctx, dt == DT_INT32 || dt == DT_INT64,
-                  errors::InvalidArgument(
-                      "Each element of `output_types_` must be one of: "
-                      "DT_INT32, DT_INT64"));
-    }
+    //OP_REQUIRES(ctx, output_types_.size() == 1, errors::InvalidArgument("The number of elements in `output_types_` must be one."));
+    //for (const DataType& dt : output_types_) {
+    //  OP_REQUIRES(ctx, dt == DT_INT32 || dt == DT_INT64,
+    //              errors::InvalidArgument(
+    //                  "Each element of `output_types_` must be one of: "
+    //                  "DT_INT32, DT_INT64"));
+    //}
   }
   void MakeDataset(OpKernelContext* ctx, DatasetBase** output) override {
     const Tensor* filenames_tensor;
@@ -236,7 +238,7 @@ class NumpyFileDatasetOp : public DatasetOpKernel {
 
     const std::vector<PartialTensorShape>& output_shapes() const override {
       static std::vector<PartialTensorShape>* shapes =
-          new std::vector<PartialTensorShape>({{-1}});
+          new std::vector<PartialTensorShape>({{-1}, {-1}});
       return *shapes;
     }
 
@@ -272,11 +274,58 @@ class NumpyFileDatasetOp : public DatasetOpKernel {
           std::unique_ptr<RandomAccessFile> file_;
           std::unique_ptr<NumpyFileReader> reader_;
           TF_RETURN_IF_ERROR(ctx->env()->NewRandomAccessFile(filename, &file_));
+zlib_filefunc64_def filefunc;
+unzFile uf = unzOpen64(filename.c_str());
+if (uf == NULL) {
+return errors::Unimplemented("XXXXXNULLXXX");
+}
+for (int i = 0; i < 3; i++) {
+unz_file_info64 file_info;
+char filename_inzip[256];
+int err = unzGetCurrentFileInfo64(uf,&file_info,filename_inzip,sizeof(filename_inzip),NULL,0,NULL,0);
+if (err!=UNZ_OK) {
+return errors::Unimplemented("XXXXXNULLXXX", err);
+}
+std::cerr << "FILENAME: " <<  filename_inzip << std::endl;
+std::cerr << "FILESIZE: " <<  file_info.uncompressed_size << std::endl;
+err = unzGoToFirstFile(uf);
+if (err < 0) {
+return errors::Unimplemented("XXXXXNULLFIST", err);
+}
+err = unzOpenCurrentFile(uf);
+if (err!=UNZ_OK) {
+return errors::Unimplemented("XXXXXNULLCURRXXX", err);
+}
+char buf[4096];
+int total = 0;
+err = unzReadCurrentFile(uf, buf, sizeof(buf));
+if (err > 0) {
+	total += err;
+	std::cerr << "TOTAL1 = " << total << std::endl;
+}
+else if (err < 0) {
+return errors::Unimplemented("XXXXXNULLCURRREADXXX", err);
+}
+else {
+	std::cerr << "TOTAL = " << total << std::endl;
+	break;
+}
+err = unzCloseCurrentFile(uf);
+if (err != UNZ_OK) {
+	return errors::Unimplemented("XXXXXNULLCURRCLOSEXXX", err);
+}
+err = unzGoToNextFile(uf);
+if (err != 0) {
+return errors::Unimplemented("XXXXXNULLNEXT", err);
+}
+}
+return errors::Unimplemented("XXXXXSUCCESSXXX", "filename_inzip");
+
           reader_.reset(new NumpyFileReader(file_.get()));
           TF_RETURN_IF_ERROR(reader_->ReadHeader());
           TensorShape output_shape;
 	  TF_RETURN_IF_ERROR(TensorShapeUtils::MakeShape(reader_->Shape(), &output_shape));
-
+return errors::Unimplemented("XXXXXXX");
 	  std::string buffer;
 	  auto output_type = dataset()->output_types_[0];
           Tensor value_tensor(ctx->allocator({}), output_type, output_shape);

@@ -34,7 +34,7 @@ numpy_ops = load_library.load_op_library(
 class NumpyFileDataset(dataset_ops.DatasetSource):
   """A Numpy File Dataset that reads the npy file."""
 
-  def __init__(self, filenames, output_types=dtypes.string):
+  def __init__(self, filenames, output_types=(dtypes.float32, dtypes.float32)):
     """Create a `NumpyFileDataset`.
 
     `NumpyFileDataset` allows a user to read data from a numpy `npy` file.

@@ -30,11 +30,18 @@ cc_library(
         "zconf.h",
         "zutil.c",
         "zutil.h",
+        "contrib/minizip/unzip.h",
+        "contrib/minizip/unzip.c",
+        "contrib/minizip/ioapi.h",
+        "contrib/minizip/ioapi.c",
     ],
     hdrs = ["zlib.h"],
     copts = [
         "-Wno-shift-negative-value",
         "-DZ_HAVE_UNISTD_H",
     ],
-    includes = ["."],
+    includes = [
+	".",
+        "contrib/minizip",
+    ],
 )
