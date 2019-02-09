@@ -17,4 +17,14 @@ steps:
   displayName: 'Install Docker CE'
 - script: |
     pip install twine
+    echo Success!
   displayName: 'Install Twine'
+- script: |
+    sudo bash -x ${TRAVIS_BUILD_DIR}/tensorflow_io/kafka/python/kernel_tests/kafka_test.sh start kafka
+    sudo bash -x ${TRAVIS_BUILD_DIR}/tensorflow_io/ignite/python/tests/start_ignite.sh
+    echo Success!
+  displayName: 'Setup Ignite/Kafka'
+- script: |
+    sudo docker run --rm -v ${PWD}:/working_dir -w /working_dir tensorflow/tensorflow:custom-op bash -x /working_dir/.travis/python.release.sh 2.7
+    echo Success!
+  displayName: 'Build TensorFlow IO'
