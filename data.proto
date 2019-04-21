@@ -1,0 +1,23 @@
+//syntax = "proto3";
+//import "google/protobuf/any.proto";
+
+//package dataset;
+
+//message DatasetRequest {
+//  string mess = 1;
+//}
+
+//service gRPC {
+//   rpc Dataset(DatasetRequest) returns (stream google.protobuf.Any) {}
+//   rpc Dataset(DatasetRequest) returns (google.protobuf.Any) {}
+//}
+
+syntax = "proto3";
+import "google/protobuf/any.proto";
+service FormatData {
+  rpc DoFormat(Data) returns (Data){}
+  rpc DoFormat2(Data) returns (google.protobuf.Any){}
+}
+message Data {
+  string text = 1;
+}

@@ -1,0 +1,17 @@
+syntax = "proto3";
+import "google/protobuf/any.proto";
+package grpcDemo;
+
+message HelloRequest {
+   string name = 1;
+   google.protobuf.Any message = 2;
+}
+
+message HelloReply {
+   string message = 1;
+}
+
+
+service gRPC {
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
