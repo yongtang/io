@@ -35,7 +35,7 @@ namespace data {
 namespace video {
 
 static int io_read_packet(void *opaque, uint8_t *buf, int buf_size) {
-  VideoReader *r = (VideoReader *)opaque;
+  FFmpegReader *r = (FFmpegReader *)opaque;
   StringPiece result;
   Status status = r->stream_->Read(r->offset_, buf_size, &result, (char *)buf);
   if (!(status.ok() || errors::IsOutOfRange(status))) {
@@ -46,7 +46,7 @@ static int io_read_packet(void *opaque, uint8_t *buf, int buf_size) {
 }
 
 static int64_t io_seek(void *opaque, int64_t offset, int whence) {
-  VideoReader *r = (VideoReader *)opaque;
+  FFmpegReader *r = (FFmpegReader *)opaque;
   uint64 file_size = 0;
   Status status = r->stream_->GetFileSize(&file_size);
   if (!status.ok()) {
@@ -80,7 +80,7 @@ static int64_t io_seek(void *opaque, int64_t offset, int whence) {
   return -1;
 }
 
-Status VideoReader::ReadHeader()
+Status FFmpegReader::InitializeReader()
 {
     // Allocate format
     if ((format_context_ = avformat_alloc_context()) == NULL) {
@@ -93,23 +93,23 @@ Status VideoReader::ReadHeader()
     format_context_->pb = io_context_;
     // Open input file, and allocate format context
     if (avformat_open_input(&format_context_, filename_.c_str(), NULL, NULL) < 0) {
-      return errors::InvalidArgument("could not open video file: ", filename_);
+      return errors::InvalidArgument("could not open media file: ", filename_);
     }
     // Retrieve stream information
     if (avformat_find_stream_info(format_context_, NULL) < 0) {
       return errors::InvalidArgument("could not find stream information: ", filename_);
     }
-    // Find video stream
-    if ((stream_index_ = av_find_best_stream(format_context_, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0)) < 0) {
-      return errors::InvalidArgument("could not find video stream: ", filename_);
+    // Find media stream
+    if ((stream_index_ = av_find_best_stream(format_context_, MediaType(), -1, -1, NULL, 0)) < 0) {
+      return errors::InvalidArgument("could not find media stream: ", filename_);
     }
 
-    AVStream *video_stream = format_context_->streams[stream_index_];
+    AVStream *media_stream = format_context_->streams[stream_index_];
 #if LIBAVCODEC_VERSION_MAJOR > 56
     // Find decoder for the stream
-    AVCodec *codec = avcodec_find_decoder(video_stream->codecpar->codec_id);
+    AVCodec *codec = avcodec_find_decoder(media_stream->codecpar->codec_id);
     if (!codec) {
-      return errors::Internal("could not find video codec: ", video_stream->codecpar->codec_id);
+      return errors::Internal("could not find media codec: ", media_stream->codecpar->codec_id);
     }
     // Allocate a codec context for the decoder
     codec_context_ = avcodec_alloc_context3(codec);
@@ -117,15 +117,15 @@ Status VideoReader::ReadHeader()
       return errors::Internal("could not allocate codec context");
     }
     // Copy codec parameters from input stream to output codec context
-    if (avcodec_parameters_to_context(codec_context_, video_stream->codecpar) < 0) {
+    if (avcodec_parameters_to_context(codec_context_, media_stream->codecpar) < 0) {
       return errors::Internal("could not copy codec parameters from input stream to output codec context");
     }
 #else
-    codec_context_ = video_stream->codec;
+    codec_context_ = media_stream->codec;
     // Find decoder for the stream
     AVCodec *codec = avcodec_find_decoder(codec_context_->codec_id);
     if (!codec) {
-      return errors::Internal("could not find video codec: ", codec_context_->codec_id);
+      return errors::Internal("could not find media codec: ", codec_context_->codec_id);
     }
 #endif
     // Initialize the decoders
@@ -149,6 +149,25 @@ Status VideoReader::ReadHeader()
     av_init_packet(&packet_);
     packet_.data = NULL;
     packet_.size = 0;
+
+    return Status::OK();
+}
+
+Status AudioReader::ReadHeader() {
+
+    Status status = InitializeReader();
+    if (!status.ok()) {
+      return status;
+    }
+    return errors::Unimplemented("NOT IMPLEMENTED");
+}
+
+Status VideoReader::ReadHeader() {
+
+    Status status = InitializeReader();
+    if (!status.ok()) {
+      return status;
+    }
 
     // create scaling context
 #if LIBSWSCALE_VERSION_MAJOR > 2
@@ -183,7 +202,7 @@ Status VideoReader::ReadHeader()
     return Status::OK();
   }
 
-bool VideoReader::ReadAhead(bool first)
+bool FFmpegReader::ReadAhead(bool first)
 {
     while (packet_more_ || frame_more_) {
       while (packet_more_) {
@@ -231,7 +250,7 @@ bool VideoReader::ReadAhead(bool first)
     return false;
   }
 
-Status VideoReader::ReadFrame(int *num_bytes, uint8_t**value, int *height, int *width)
+Status FFmpegReader::ReadFrame(int *num_bytes, uint8_t**value, int *height, int *width)
 {
     *height = codec_context_->height;
     *width = codec_context_->width;
@@ -244,7 +263,7 @@ Status VideoReader::ReadFrame(int *num_bytes, uint8_t**value, int *height, int *
     return errors::OutOfRange("EOF");
 }
 
-VideoReader::~VideoReader() {
+FFmpegReader::~FFmpegReader() {
     av_free(buffer_rgb_);
 #if LIBAVCODEC_VERSION_MAJOR > 54
     av_frame_free(&frame_rgb_);

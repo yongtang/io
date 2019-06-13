@@ -32,22 +32,25 @@ namespace tensorflow {
 namespace data {
 namespace video {
 
-class VideoReader {
+class FFmpegReader {
  public:
-  explicit VideoReader(SizedRandomAccessInputStreamInterface* s, const string& filename) : stream_(s), filename_(filename) {}
+  explicit FFmpegReader(SizedRandomAccessInputStreamInterface* s, const string& filename) : stream_(s), filename_(filename) {}
 
-  Status ReadHeader();
+  Status InitializeReader();
 
   bool ReadAhead(bool first);
 
   Status ReadFrame(int *num_bytes, uint8_t**value, int *height, int *width);
 
-  virtual ~VideoReader();
+  virtual ~FFmpegReader();
+
+  virtual enum AVMediaType MediaType() = 0;
 
  public:
   SizedRandomAccessInputStreamInterface* stream_;
   int64 offset_ = 0;
- private:
+ protected:
+
   std::string ahead_;
   std::string filename_;
   bool frame_more_ = false;
@@ -63,7 +66,29 @@ class VideoReader {
   AVFrame *frame_ = 0;
   AVPacket packet_;
   AVIOContext *io_context_ = NULL;
-  TF_DISALLOW_COPY_AND_ASSIGN(VideoReader);
+  TF_DISALLOW_COPY_AND_ASSIGN(FFmpegReader);
+};
+
+class VideoReader : public FFmpegReader {
+ public:
+  explicit VideoReader(SizedRandomAccessInputStreamInterface* s, const string& filename) : FFmpegReader(s, filename) {}
+
+  virtual ~VideoReader() {};
+
+  Status ReadHeader();
+
+  enum AVMediaType MediaType() override { return AVMEDIA_TYPE_VIDEO; }
+};
+
+class AudioReader : public FFmpegReader{
+ public:
+  explicit AudioReader(SizedRandomAccessInputStreamInterface* s, const string& filename) : FFmpegReader(s, filename) {}
+
+  virtual ~AudioReader() {};
+
+  Status ReadHeader();
+
+  enum AVMediaType MediaType() override { return AVMEDIA_TYPE_AUDIO; }
 };
 
 }  // namespace

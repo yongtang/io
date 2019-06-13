@@ -22,11 +22,13 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow_io.video.python.ops.video_ops import VideoDataset
+from tensorflow_io.video.python.ops.video_ops import AudioDataset
 
 from tensorflow.python.util.all_util import remove_undocumented
 
 _allowed_symbols = [
     "VideoDataset",
+    "AudioDataset",
 ]
 
 remove_undocumented(__name__, allowed_exception_list=_allowed_symbols)
