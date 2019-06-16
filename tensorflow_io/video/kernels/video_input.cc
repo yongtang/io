@@ -91,29 +91,18 @@ class AudioInput: public FileInput<video::AudioReader> {
       state.reset(new video::AudioReader(dynamic_cast<SizedRandomAccessInputStreamInterface*>(s), filename()));
       TF_RETURN_IF_ERROR(state.get()->ReadHeader());
     }
-    // Read the first frame to get height and width
-    int num_bytes, height, width;
-    uint8_t *value;
-    Status status = state.get()->ReadFrame(&num_bytes, &value, &height, &width);
-    if (!(status.ok() || errors::IsOutOfRange(status))) {
-      return status;
-    }
-    if (!status.ok()) {
-      return Status::OK();
-    }
-    Tensor value_tensor(ctx->allocator({}), DT_UINT8, {record_to_read, height, width, 3});
-    std::memcpy(reinterpret_cast<char*>(value_tensor.flat<uint8_t>().data()), reinterpret_cast<char*>(value), num_bytes * sizeof(uint8_t));
-    (*record_read)++;
+    int64 channels = state.get()->Channels();
+    Tensor value_tensor(ctx->allocator({}), DT_INT16, {record_to_read, channels});
     while ((*record_read) < record_to_read) {
-      Status status = state.get()->ReadFrame(&num_bytes, &value, &height, &width);
+      int64 offset = (*record_read) * channels; // Note: int16 based offset, not char
+      
+      Status status = state.get()->ReadSample(&value_tensor.flat<int16>().data()[offset]);
       if (!(status.ok() || errors::IsOutOfRange(status))) {
         return status;
       }
       if (!status.ok()) {
         break;
       }
-      int64 offset = (*record_read) * height * width * 3;
-      std::memcpy(reinterpret_cast<char*>(&value_tensor.flat<uint8_t>().data()[offset]), reinterpret_cast<char*>(value), num_bytes * sizeof(uint8_t));
       (*record_read)++;
     }
     out_tensors->emplace_back(std::move(value_tensor));

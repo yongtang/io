@@ -159,7 +159,17 @@ Status AudioReader::ReadHeader() {
     if (!status.ok()) {
       return status;
     }
-    return errors::Unimplemented("NOT IMPLEMENTED");
+
+    int data_size = av_get_bytes_per_sample(codec_context_->sample_fmt);
+    if (data_size != 2) {
+      return errors::InvalidArgument("only int16 data type (data size == 2) supported, received size: ", data_size);
+    }
+
+    frame_more_ = true;
+    packet_more_ = false;
+    buffer_more_ = ReadAhead(true);
+
+    return Status::OK();
 }
 
 Status VideoReader::ReadHeader() {
@@ -209,15 +219,15 @@ bool FFmpegReader::ReadAhead(bool first)
         packet_more_ = false;
 	if (packet_.stream_index == stream_index_) {
           int got_frame = 0;
-          int decoded = avcodec_decode_video2(codec_context_, frame_, &got_frame, &packet_);
+          int decoded = DecodeFrame(&got_frame);
           if (!frame_more_ && got_frame) {
             // This is the cached packet.
-            sws_scale(sws_context_, frame_->data, frame_->linesize, 0, codec_context_->height, frame_rgb_->data, frame_rgb_->linesize);
+            ProcessFrame();
             packet_more_ = true;
             return true;
           }
           if (decoded >= 0 && got_frame) {
-	    sws_scale(sws_context_, frame_->data, frame_->linesize, 0, codec_context_->height, frame_rgb_->data, frame_rgb_->linesize);
+            ProcessFrame();
 	    if (packet_.data) {
 	      packet_.data += decoded;
 	      packet_.size -= decoded;
@@ -248,9 +258,44 @@ bool FFmpegReader::ReadAhead(bool first)
       }
     }
     return false;
-  }
+}
 
-Status FFmpegReader::ReadFrame(int *num_bytes, uint8_t**value, int *height, int *width)
+Status AudioReader::ReadSample(int16 *buffer) {
+    while (buffer_more_) {
+      if (sample_index_ < frame_->nb_samples) {
+        for (int64 channel = 0; channel < codec_context_->channels; channel++) {
+          memcpy(&buffer[channel], frame_->data[channel] + (sample_index_ * sizeof(int16)), sizeof(int16));
+        }
+        sample_index_++;
+        return Status::OK();
+      }
+      buffer_more_ = ReadAhead(true);
+      sample_index_ = 0;
+    }
+    return errors::OutOfRange("EOF");
+}
+
+int AudioReader::DecodeFrame(int *got_frame) {
+  int decoded = avcodec_decode_audio4(codec_context_, frame_, got_frame, &packet_);
+  if (decoded >= 0) {
+    decoded = FFMIN(decoded, packet_.size);
+  }
+  return decoded;
+}
+
+void AudioReader::ProcessFrame() {
+  // TODO: convert sample to int16 format
+}
+
+int VideoReader::DecodeFrame(int *got_frame) {
+  return avcodec_decode_video2(codec_context_, frame_, got_frame, &packet_);
+}
+
+void VideoReader::ProcessFrame() {
+  sws_scale(sws_context_, frame_->data, frame_->linesize, 0, codec_context_->height, frame_rgb_->data, frame_rgb_->linesize);
+}
+
+Status VideoReader::ReadFrame(int *num_bytes, uint8_t**value, int *height, int *width)
 {
     *height = codec_context_->height;
     *width = codec_context_->width;
@@ -263,7 +308,7 @@ Status FFmpegReader::ReadFrame(int *num_bytes, uint8_t**value, int *height, int 
     return errors::OutOfRange("EOF");
 }
 
-FFmpegReader::~FFmpegReader() {
+VideoReader::~VideoReader() {
     av_free(buffer_rgb_);
 #if LIBAVCODEC_VERSION_MAJOR > 54
     av_frame_free(&frame_rgb_);
@@ -271,6 +316,10 @@ FFmpegReader::~FFmpegReader() {
     avcodec_free_frame(&frame_rgb_);
 #endif
     sws_freeContext(sws_context_);
+}
+
+
+FFmpegReader::~FFmpegReader() {
 #if LIBAVCODEC_VERSION_MAJOR > 54
     av_frame_free(&frame_);
 #else

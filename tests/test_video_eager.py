@@ -29,10 +29,10 @@ if sys.platform == "darwin":
 import tensorflow_io.video as video_io  # pylint: disable=wrong-import-position
 import tensorflow_io.video as audio_io  # pylint: disable=wrong-import-position
 
+
 video_path = "file://" + os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "test_video", "small.mp4")
 def test_video_dataset():
-  """test_video_dataset"""
   num_repeats = 2
 
   video_dataset = video_io.VideoDataset([video_path]).repeat(num_repeats)
