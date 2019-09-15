@@ -23,6 +23,7 @@ import numpy
 import pandas
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
 
 import tensorflow as tf
 if not (hasattr(tf, "version") and tf.version.VERSION.startswith("2.")):
@@ -63,6 +64,8 @@ def test_io_tensor_from_tensor_with_sklearn():
   # https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
   #
   # Both IOTensor and pandas/sklearn are used, to show the usage of IOTensor.
+  """
+  ```
   airline_passengers_csv = os.path.join(
       os.path.dirname(os.path.abspath(__file__)),
       "test_csv", "airline-passengers.csv")
@@ -108,67 +111,11 @@ def test_io_tensor_from_tensor_with_sklearn():
   model.add(Dense(1))
   model.compile(loss='mean_squared_error', optimizer='adam')
 
-  #model.fit(train_x, train_y, epochs=100, batch_size=1, verbose=2)
-
-  #########################################
-  ############ IOTensor Match: ############
-  train_size = int(len(dataset) * 0.67)
-  #test_size = len(dataset) - train_size
-  dataset = dataframe.values
-  dataset = dataset.astype('float32')
-
-  scaler = MinMaxScaler(feature_range=(0, 1))
-  scaler.fit(tfio.IOTensor.from_tensor(dataset))
-
-  train, test = dataset[0:train_size, :], dataset[train_size:len(dataset), :]
-
-  train_dataset = tfio.IOTensor.from_tensor(train)
-
-  train_dataset = tfio.IOTensor.from_tensor(scaler.transform(train_dataset))
-
-  train_dataset = train_dataset.window(look_back + 1)
-  train_dataset = train_dataset.to_dataset()
-  train_dataset = train_dataset.map(lambda e: tf.split(e, [look_back, 1]))
-  train_dataset = train_dataset.map(lambda x, y: (tf.reshape(x, [1, look_back]), y))
-  print("train_dataset: ", train_dataset)
-
-  test_dataset = tfio.IOTensor.from_tensor(test)
-
-  test_dataset = tfio.IOTensor.from_tensor(scaler.transform(test_dataset))
-
-  test_dataset = test_dataset.window(look_back + 1)
-  test_dataset = test_dataset.to_dataset()
-  test_dataset = test_dataset.map(lambda e: tf.split(e, [look_back, 1]))
-  test_dataset = test_dataset.map(lambda x, y: (tf.reshape(x, [1, look_back]), y))
-
-  model.fit(train_dataset.batch(1), epochs=100, verbose=2)
-  #########################################
+  model.fit(train_x, train_y, epochs=100, batch_size=1, verbose=2)
 
   # make predictions
   train_predict = model.predict(train_x)
   test_predict = model.predict(test_x)
-
-  #########################################
-  ############ IOTensor Match: ############
-  train_x_dataset = train_dataset.map(lambda x, y: x)
-  test_x_dataset = test_dataset.map(lambda x, y: x)
-
-  train_x_dataset = train_x_dataset.batch(1)
-  test_x_dataset = test_x_dataset.batch(1)
-
-  train_predict_dataset = model.predict(train_x_dataset)
-  test_predict_dataset = model.predict(test_x_dataset)
-
-  train_predict_dataset_value = [d.tolist() for d in train_predict_dataset]
-  test_predict_dataset_value = [d.tolist() for d in test_predict_dataset]
-
-  # Note: train_predict_dataset_value and test_predict_dataset_value
-  # have one extra compared with original implementation.
-  train_predict_dataset_value = train_predict_dataset_value[:-1]
-  test_predict_dataset_value = test_predict_dataset_value[:-1]
-  assert numpy.allclose(train_predict_dataset_value, train_predict.tolist())
-  assert numpy.allclose(test_predict_dataset_value, test_predict.tolist())
-  #########################################
 
   # invert predictions
   train_predict = scaler.inverse_transform(train_predict)
@@ -192,7 +139,60 @@ def test_io_tensor_from_tensor_with_sklearn():
       len(train_predict)+(look_back*2)+1:len(dataset)-1, :] = test_predict
 
   # plot baseline and predictions
-  #plt.plot(scaler.inverse_transform(dataset))
-  #plt.plot(train_predict_plot)
-  #plt.plot(test_predict_plot)
-  #plt.show()
+  plt.plot(scaler.inverse_transform(dataset))
+  plt.plot(train_predict_plot)
+  plt.plot(test_predict_plot)
+  plt.show()
+  ```
+  """
+  look_back = 1
+
+  airline_passengers_csv = os.path.join(
+      os.path.dirname(os.path.abspath(__file__)),
+      "test_csv", "airline-passengers.csv")
+
+  data = tfio.IOTensor.from_csv(airline_passengers_csv)
+  data = data("Passengers")
+  data = data.cast(tf.float32)
+  data = data.reshape([-1, 1])
+  scaler = MinMaxScaler(feature_range=(0, 1))
+  scaler.fit(data)
+  data = data.transform(scaler.transform)
+
+  train_data, test_data = data.split(
+      lambda x: tf.split(x, [int(float(len(data)) * 0.67), len(data) - int(float(len(data)) * 0.67)]))
+
+  train_data = train_data.window(look_back + 1)
+  train_x, train_y = train_data.split(
+      lambda e: tf.split(e, [look_back, 1]), axis=1)
+  train_x = train_x.reshape([-1, 1, look_back])
+
+  test_data = test_data.window(look_back + 1)
+  test_x, test_y = test_data.split(
+      lambda e: tf.split(e, [look_back, 1]), axis=1)
+  test_x = test_x.reshape([-1, 1, look_back])
+
+  # create and fit the LSTM network
+  model = Sequential()
+  model.add(LSTM(4, input_shape=(1, look_back)))
+  model.add(Dense(1))
+  model.compile(loss='mean_squared_error', optimizer='adam')
+
+  model.fit(train_x.to_tensor(), train_y.to_tensor(), epochs=100, batch_size=1, verbose=2)
+
+  # make predictions
+  train_predict = model.predict(train_x.to_tensor())
+  test_predict = model.predict(test_x.to_tensor())
+
+  # invert predictions
+  train_predict = scaler.inverse_transform(train_predict)
+  train_y = scaler.inverse_transform(train_y)
+
+  test_predict = scaler.inverse_transform(test_predict)
+  test_y = scaler.inverse_transform(test_y)
+
+  # calculate root mean squared error
+  train_score = math.sqrt(mean_squared_error(train_y, train_predict))
+  print('Train Score: %.2f RMSE' % (train_score))
+  test_score = math.sqrt(mean_squared_error(test_y, test_predict))
+  print('Test Score: %.2f RMSE' % (test_score))

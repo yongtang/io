@@ -19,6 +19,7 @@ from __future__ import print_function
 
 import sys
 import uuid
+import numpy as np
 
 import tensorflow as tf
 
@@ -217,9 +218,57 @@ class BaseIOTensor(_IOTensor):
                         internal=True)
 
   #=============================================================================
+  # Casting
+  #=============================================================================
+  def cast(self, dtype):
+    """Returning the dtype-cast of this IOTensor."""
+    spec = tf.TensorSpec(self.shape, dtype)
+    def function(resource, start, stop, step, component, shape, dtype):
+      return tf.cast(
+          self._function(
+          resource,
+          start, stop, step,
+          component=component,
+          shape=shape, dtype=self.dtype), dtype)
+    return BaseIOTensor(spec,
+                        self._resource,
+                        function,
+                        component=self._component,
+                        internal=True)
+
+  #=============================================================================
+  # Reshaping
+  #=============================================================================
+  def reshape(self, shape):
+    """Returning the reshape of this IOTensor."""
+    tensor = tf.reshape(self.to_tensor(), shape)
+    return TensorIOTensor(tensor, internal=True)
+
+  #=============================================================================
+  # Function Transforming
+  #=============================================================================
+  def transform(self, func):
+    """Returning the function transform of this IOTensor."""
+    tensor = func(self)
+    return TensorIOTensor(tensor, internal=True)
+
+  #=============================================================================
+  # Function Splitting
+  #=============================================================================
+  def split(self, func, axis=0):
+    """Returning the function split of this IOTensor."""
+    indices = np.arange(self.shape[axis])
+    indices_x, indices_y = func(indices)
+    tensor = self.to_tensor()
+    tensor_x = tf.gather(tensor, indices_x, axis=axis)
+    tensor_y = tf.gather(tensor, indices_y, axis=axis)
+    return TensorIOTensor(
+        tensor_x, internal=True), TensorIOTensor(
+            tensor_y, internal=True)
+
+  #=============================================================================
   # Tensor Type Conversions
   #=============================================================================
-
   def to_tensor(self, **kwargs):
     """Converts this `IOTensor` into a `tf.Tensor`.
 
