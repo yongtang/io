@@ -29,30 +29,15 @@ class _IOTensorMeta(property):
 class _IOTensorDataset(tf.compat.v2.data.Dataset):
   """_IOTensorDataset"""
 
-  def __init__(self, spec, component, resource, function):
-    start = 0
-    stop = tf.nest.flatten(spec)[0].shape[0]
-    capacity = 4096
-    entry_start = list(range(start, stop, capacity))
-    entry_stop = entry_start[1:] + [stop]
+  def __init__(self, spec, partitions, resource, function):
+    entry_stop = tf.cumsum(partitions)
+    entry_start = tf.concat([[0], entry_stop[:-1]], axis=0)
 
-    dataset = tf.compat.v2.data.Dataset.from_tensor_slices((
-        tf.constant(entry_start, tf.int64),
-        tf.constant(entry_stop, tf.int64)))
-
-    components = [
-        (component, e) for component, e in zip(
-            tf.nest.flatten(component), tf.nest.flatten(spec))]
-    components = [
-        dataset.map(
-            lambda start, stop: function(
-                resource,
-                start, stop, 1,
-                component=component,
-                shape=e.shape,
-                dtype=e.dtype)) for (component, e) in components]
-    dataset = tf.compat.v2.data.Dataset.zip(
-        tf.nest.pack_sequence_as(spec, components))
+    dataset = tf.compat.v2.data.Dataset.from_tensor_slices(
+        (tf.cast(entry_start, tf.int64), tf.cast(entry_stop, tf.int64)))
+    dataset = dataset.map(
+        lambda start, stop: function(
+            resource, start, stop, dtype=spec.dtype))
     dataset = dataset.unbatch()
 
     self._dataset = dataset
@@ -73,14 +58,18 @@ class _IOTensor(object):
 
   def __init__(self,
                spec,
-               component,
+               partitions,
+               function_init,
+               function_read,
                internal=False):
     if not internal:
       raise ValueError("IOTensor constructor is private; please use one "
                        "of the factory methods instead (e.g., "
                        "IOTensor.from_tensor())")
     self._spec = spec
-    self._component = component
+    self._partitions = partitions
+    self._function_init = function_init
+    self._function_read = function_read
     super(_IOTensor, self).__init__()
 
   #=============================================================================
@@ -119,8 +108,9 @@ class _IOTensor(object):
     Returns:
       A `tf.data.Dataset` with value obtained from this `IOTensor`.
     """
+    resource = self._function_init()
     return _IOTensorDataset(
-        self.spec, self._component, self._resource, self._function)
+        self.spec, self._partitions, resource, self._function_read)
 
 class BaseIOTensor(_IOTensor):
   """BaseIOTensor
@@ -140,14 +130,13 @@ class BaseIOTensor(_IOTensor):
 
   def __init__(self,
                spec,
-               resource,
-               function,
-               component=0,
+               partitions,
+               function_init,
+               function_read,
                internal=False):
-    self._resource = resource
-    self._function = function
+    self._resource = None
     super(BaseIOTensor, self).__init__(
-        spec, component=component, internal=internal)
+        spec, partitions, function_init, function_read, internal=internal)
 
   #=============================================================================
   # Accessors
@@ -174,11 +163,12 @@ class BaseIOTensor(_IOTensor):
     (start, stop, step) = index.indices(self.shape[0])
     if start >= self.shape[0]:
       raise IndexError("index %s is out of range" % key)
-    item = self._function(
-        self._resource,
-        start, stop, step,
-        component=self._component,
-        shape=self.spec.shape, dtype=self.spec.dtype)
+    if self._resource is None:
+      self._resource = self._function_init()
+    item = self._function_read(
+        self._resource, start, stop, dtype=self.spec.dtype)
+    shape = [stop - start] + self.shape[1:]
+    item = tf.reshape(item, shape)
     return tf.squeeze(item, axis=[0]) if (stop == start + 1) else item
 
   def __len__(self):
@@ -248,19 +238,27 @@ class TensorIOTensor(BaseIOTensor):
                internal=False):
     tensor = tf.convert_to_tensor(tensor)
 
+    spec = tf.TensorSpec(tensor.shape, tensor.dtype)
+    partitions = [tensor.shape.as_list()[0]]
+
+    def function_init():
+      return tensor
+
     self._base_start = [0 for _ in tensor.shape.as_list()]
     self._base_size = [-1 for _ in tensor.shape.as_list()]
-    def function(resource, start, stop, step, component, shape, dtype): # pylint: disable=unused-argument
+
+    def function_read(resource, start, stop, dtype): # pylint: disable=unused-argument
       slice_start = self._base_start
       slice_size = self._base_size
       slice_start[0] = start
       slice_size[0] = stop - start
       return tf.slice(resource, slice_start, slice_size)
+
     self._tensor = tensor
 
     super(TensorIOTensor, self).__init__(
         tf.TensorSpec(tensor.shape, tensor.dtype),
-        tensor, function, internal=internal)
+        partitions, function_init, function_read, internal=internal)
 
   #=============================================================================
   # Tensor Type Conversions

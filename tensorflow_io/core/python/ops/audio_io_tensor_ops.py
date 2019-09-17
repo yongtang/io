@@ -40,18 +40,32 @@ class AudioIOTensor(io_tensor_ops.BaseIOTensor): # pylint: disable=protected-acc
                filename,
                internal=False):
     with tf.name_scope("AudioIOTensor") as scope:
-      resource = core_ops.wav_indexable_init(
-          filename,
-          container=scope,
-          shared_name="%s/%s" % (filename, uuid.uuid4().hex))
-      shape, dtype, rate = core_ops.wav_indexable_spec(resource, component=0)
-      shape = tf.TensorShape(shape.numpy())
-      dtype = tf.as_dtype(dtype.numpy())
+      shapes, dtypes, partitions, rates = core_ops.wav_readable_spec(
+          filename, capacity=4096)
+      shapes = tf.unstack(shapes)
+      dtypes = tf.unstack(dtypes)
+      rates = tf.unstack(rates)
+      assert (len(shapes), len(dtypes), len(rates)) == (1, 1, 1)
+
+      length = tf.reduce_sum(partitions).numpy()
+      shape = tf.TensorShape([length]).concatenate(shapes[0][1:].numpy())
+      dtype = tf.as_dtype(dtypes[0].numpy())
       spec = tf.TensorSpec(shape, dtype)
 
-      self._rate = rate.numpy()
+      partitions = partitions.numpy()
+
+      rate = rates[0].numpy()
+
+      self._rate = rate
+
+      def function_init():
+        return core_ops.wav_readable_init(filename)
+      def function_read(resource, start, stop, dtype):
+        return core_ops.wav_readable_read(resource, start, stop, dtype=dtype)
+
       super(AudioIOTensor, self).__init__(
-          spec, resource, core_ops.wav_indexable_get_item,
+          spec, partitions,
+          function_init, function_read,
           internal=internal)
 
   #=============================================================================

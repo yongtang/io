@@ -19,7 +19,22 @@ limitations under the License.
 
 namespace tensorflow {
 
-REGISTER_OP("WAVIndexableInit")
+REGISTER_OP("WAVReadableSpec")
+  .Input("input: string")
+  .Input("capacity: int64")
+  .Output("shapes: int64")
+  .Output("dtypes: int64")
+  .Output("partitions: int64")
+  .Output("rates: int32")
+  .SetShapeFn([](shape_inference::InferenceContext* c) {
+    c->set_output(0, c->MakeShape({c->UnknownDim(), c->UnknownDim()}));
+    c->set_output(1, c->MakeShape({c->UnknownDim()}));
+    c->set_output(2, c->MakeShape({c->UnknownDim()}));
+    c->set_output(3, c->MakeShape({c->UnknownDim()}));
+    return Status::OK();
+   });
+
+REGISTER_OP("WAVReadableInit")
   .Input("input: string")
   .Output("output: resource")
   .Attr("container: string = ''")
@@ -29,34 +44,14 @@ REGISTER_OP("WAVIndexableInit")
     return Status::OK();
    });
 
-REGISTER_OP("WAVIndexableSpec")
-  .Input("input: resource")
-  .Input("component: int64")
-  .Output("shape: int64")
-  .Output("dtype: int64")
-  .Output("rate: int32")
-  .SetShapeFn([](shape_inference::InferenceContext* c) {
-    c->set_output(0, c->MakeShape({c->UnknownDim()}));
-    c->set_output(1, c->MakeShape({}));
-    c->set_output(2, c->Scalar());
-     return Status::OK();
-   });
-
-REGISTER_OP("WAVIndexableGetItem")
+REGISTER_OP("WAVReadableRead")
   .Input("input: resource")
   .Input("start: int64")
   .Input("stop: int64")
-  .Input("step: int64")
-  .Input("component: int64")
   .Output("output: dtype")
-  .Attr("shape: shape")
   .Attr("dtype: type")
   .SetShapeFn([](shape_inference::InferenceContext* c) {
-    PartialTensorShape shape;
-    TF_RETURN_IF_ERROR(c->GetAttr("shape", &shape));
-    shape_inference::ShapeHandle entry;
-    TF_RETURN_IF_ERROR(c->MakeShapeFromPartialTensorShape(shape, &entry));
-    c->set_output(0, entry);
+    c->set_output(0, c->UnknownShape());
     return Status::OK();
    });
 
