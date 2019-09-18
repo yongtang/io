@@ -259,45 +259,27 @@ class WAVReadable : public ResourceBase {
     if (header_.riff_size + 8 != file_size_) {
       // corrupted file?
     }
-    DataType dtype;
     switch (header_.wBitsPerSample) {
     case 8:
-      dtype = DT_INT8;
+      dtype_ = DT_INT8;
       break;
     case 16:
-      dtype = DT_INT16;
+      dtype_ = DT_INT16;
       break;
     case 24:
-      dtype = DT_INT32;
+      dtype+ = DT_INT32;
       break;
     default:
       return errors::InvalidArgument("unsupported wBitsPerSample: ", header_.wBitsPerSample);
     }
 
-    PartialTensorShape shape = PartialTensorShape({-1, header_.nChannels});
-
-    shapes_.clear();
-    shapes_.push_back(shape);
-
-    dtypes_.clear();
-    dtypes_.push_back(dtype);
+    shape_ = PartialTensorShape({-1, header_.nChannels});
 
     return Status::OK();
   }
-  Status Components(std::vector<PartialTensorShape>* shapes, std::vector<DataType>* dtypes) {
-    for (size_t i = 0; i < shapes_.size(); i++) {
-      shapes->push_back(shapes_[i]);
-    }
-    for (size_t i = 0; i < dtypes_.size(); i++) {
-      dtypes->push_back(dtypes_[i]);
-    }
-    return Status::OK();
-  }
-  Status Spec(const Tensor& component, const int64 items, TensorShape* shape, DataType* dtype) {
-    gtl::InlinedVector<int64, 4> dims = shapes_[0].dim_sizes();
-    dims[0] = items;
-    *shape = TensorShape(dims);
-    *dtype = dtypes_[0];
+  Status Components(std::vector<PartialTensorShape>* shapes, std::vector<DataType>* dtypes, std::vector<string>* names) {
+    shapes->push_back(shape_);
+    dtypes->push_back(dtype_);
     return Status::OK();
   }
 
@@ -435,190 +417,10 @@ class WAVReadable : public ResourceBase {
   std::unique_ptr<SizedRandomAccessFile> file_ GUARDED_BY(mu_);
   uint64 file_size_ GUARDED_BY(mu_);
   struct WAVHeader header_;
-  std::vector<PartialTensorShape> shapes_;
-  std::vector<DataType> dtypes_;
+  PartialTensorShape shape_;
+  DataType dtype_;
 };
 
-template<typename IOReadableType>
-class IOReadableSpecOp : public OpKernel {
- public:
-  explicit IOReadableSpecOp(OpKernelConstruction* context) : OpKernel(context) {
-    env_ = context->env();
-  }
-
-  void Compute(OpKernelContext* context) override {
-    std::vector<string> input;
-    const Tensor* input_tensor;
-    OP_REQUIRES_OK(context, context->input("input", &input_tensor));
-    for (int64 i = 0; i < input_tensor->NumElements(); i++) {
-        input.push_back(input_tensor->flat<string>()(i));
-    }
-
-    Status status;
-
-    std::vector<string> metadata;
-    const Tensor* metadata_tensor;
-    status = context->input("metadata", &metadata_tensor);
-    if (status.ok()) {
-      for (int64 i = 0; i < metadata_tensor->NumElements(); i++) {
-        metadata.push_back(metadata_tensor->flat<string>()(i));
-      }
-    }
-
-    size_t memory_size = 0;
-    const void *memory_data = nullptr;
-    const Tensor* memory_tensor;
-    status = context->input("memory", &memory_tensor);
-    if (status.ok()) {
-      memory_data = memory_tensor->scalar<string>()().data();
-      memory_size = memory_tensor->scalar<string>()().size();
-    }
-
-    int64 capacity = -1;
-    const Tensor* capacity_tensor;
-    status = context->input("capacity", &capacity_tensor);
-    if (status.ok()) {
-      capacity = capacity_tensor->scalar<int64>()();
-    }
-
-    std::unique_ptr<IOReadableType> readable(new IOReadableType(env_));
-    OP_REQUIRES_OK(context, readable->Init(input, metadata, memory_data, memory_size));
-
-    std::vector<PartialTensorShape> shapes;
-    std::vector<DataType> dtypes;
-    OP_REQUIRES_OK(context, readable->Components(&shapes, &dtypes));
-    OP_REQUIRES(context, shapes.size() == dtypes.size(), errors::InvalidArgument("components should have equal shapes and dtypes: ", shapes.size(), " vs. ", dtypes.size()));
-
-    int64 maxrank = 0;
-    for (size_t component = 0; component < shapes.size(); component++) {
-      maxrank = maxrank > shapes[component].dims() ? maxrank : shapes[component].dims();
-    }
-    Tensor shapes_tensor(DT_INT64, TensorShape({static_cast<int64>(shapes.size()), maxrank}));
-    for (size_t component = 0; component < shapes.size(); component++) {
-      for (int64 i = 0; i < shapes[component].dims(); i++) {
-        shapes_tensor.flat<int64>()(component * maxrank + i) = shapes[component].dim_size(i);
-      }
-      for (int64 i = shapes[component].dims(); i < maxrank; i++) {
-        shapes_tensor.flat<int64>()(component * maxrank + i) = 0;
-      }
-    }
-    Tensor dtypes_tensor(DT_INT64, TensorShape({static_cast<int64>(dtypes.size())}));
-    for (size_t component = 0; component < dtypes.size(); component++) {
-      dtypes_tensor.flat<int64>()(component) = dtypes[component];
-    }
-
-    context->set_output(0, shapes_tensor);
-    context->set_output(1, dtypes_tensor);
-
-    std::vector<int64> partitions;
-    OP_REQUIRES_OK(context, readable->Partitions(capacity, &partitions));
-    Tensor partitions_tensor(DT_INT64, TensorShape({static_cast<int64>(partitions.size())}));
-    for (size_t partition_index = 0; partition_index < partitions.size(); partition_index++) {
-      partitions_tensor.flat<int64>()(partition_index) = partitions[partition_index];
-    }
-    context->set_output(2, partitions_tensor);
-
-    std::vector<Tensor> extra;
-    status = readable->Extra(&extra);
-    if (!errors::IsUnimplemented(status)) {
-      OP_REQUIRES_OK(context, status);
-      for (size_t i = 0; i < extra.size(); i++) {
-        context->set_output(3 + i, extra[i]);
-      }
-    }
-  }
- private:
-  mutable mutex mu_;
-  Env* env_ GUARDED_BY(mu_);
-};
-
-template<typename IOReadableType>
-class IOReadableInitOp : public ResourceOpKernel<IOReadableType> {
- public:
-  explicit IOReadableInitOp<IOReadableType>(OpKernelConstruction* context)
-      : ResourceOpKernel<IOReadableType>(context) {
-    env_ = context->env();
-  }
- private:
-  void Compute(OpKernelContext* context) override {
-    ResourceOpKernel<IOReadableType>::Compute(context);
-
-    Status status;
-
-    std::vector<string> input;
-    const Tensor* input_tensor;
-    OP_REQUIRES_OK(context, context->input("input", &input_tensor));
-    for (int64 i = 0; i < input_tensor->NumElements(); i++) {
-        input.push_back(input_tensor->flat<string>()(i));
-    }
-
-    std::vector<string> metadata;
-    const Tensor* metadata_tensor;
-    status = context->input("metadata", &metadata_tensor);
-    if (status.ok()) {
-      for (int64 i = 0; i < metadata_tensor->NumElements(); i++) {
-        metadata.push_back(metadata_tensor->flat<string>()(i));
-      }
-    }
-
-    const void *memory_data = nullptr;
-    size_t memory_size = 0;
-
-    const Tensor* memory_tensor;
-    status = context->input("memory", &memory_tensor);
-    if (status.ok()) {
-      memory_data = memory_tensor->scalar<string>()().data();
-      memory_size = memory_tensor->scalar<string>()().size();
-    }
-
-    OP_REQUIRES_OK(context, this->resource_->Init(input, metadata, memory_data, memory_size));
-  }
-  Status CreateResource(IOReadableType** resource)
-      EXCLUSIVE_LOCKS_REQUIRED(mu_) override {
-    *resource = new IOReadableType(env_);
-    return Status::OK();
-  }
-  mutex mu_;
-  Env* env_;
-};
-
-template<typename IOReadableType>
-class IOReadableReadOp : public OpKernel {
- public:
-  explicit IOReadableReadOp<IOReadableType>(OpKernelConstruction* ctx)
-      : OpKernel(ctx) {
-  }
-
-  void Compute(OpKernelContext* context) override {
-    IOReadableType* resource;
-    OP_REQUIRES_OK(context, GetResourceFromContext(context, "input", &resource));
-    core::ScopedUnref unref(resource);
-
-    const Tensor* start_tensor;
-    OP_REQUIRES_OK(context, context->input("start", &start_tensor));
-    int64 start = start_tensor->scalar<int64>()();
-
-    const Tensor* stop_tensor;
-    OP_REQUIRES_OK(context, context->input("stop", &stop_tensor));
-    int64 stop = stop_tensor->scalar<int64>()();
-
-    Tensor component_empty(DT_INT64, TensorShape({}));
-    component_empty.scalar<int64>()() = 0;
-    const Tensor* component;
-    Status status = context->input("component", &component);
-    if (!status.ok()) {
-      component = &component_empty;
-    }
-
-    TensorShape shape;
-    DataType dtype;
-    OP_REQUIRES_OK(context, resource->Spec(*component, stop - start, &shape, &dtype));
-
-    Tensor tensor(dtype, shape);
-    OP_REQUIRES_OK(context, resource->Read(start, stop, *component, &tensor));
-    context->set_output(0, tensor);
-  }
-};
 REGISTER_KERNEL_BUILDER(Name("WAVReadableSpec").Device(DEVICE_CPU),
                         IOReadableSpecOp<WAVReadable>);
 REGISTER_KERNEL_BUILDER(Name("WAVReadableInit").Device(DEVICE_CPU),

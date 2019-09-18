@@ -293,14 +293,13 @@ class _TableIOTensor(_IOTensor):
   def __init__(self,
                spec,
                columns,
-               resource,
-               function,
+               partitions,
+               function_init,
+               function_read,
                internal=False):
     self._columns = columns
-    self._resource = resource
-    self._function = function
     super(_TableIOTensor, self).__init__(
-        spec, columns, internal=internal)
+        spec, partitions, function_init, function_read, internal=internal)
 
   #=============================================================================
   # Accessors
