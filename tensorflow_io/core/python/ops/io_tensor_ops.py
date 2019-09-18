@@ -181,29 +181,35 @@ class BaseIOTensor(_IOTensor):
   #=============================================================================
   def window(self, size):
     """Returns the sliding window of this IOTensor."""
+    indices = tf.cumsum(self._partitions).numpy()
+    if indices[-1] < size:
+      raise ValueError(
+          "window size %d must be smaller than %d" % (size, indices[-1]))
+    maximum = indices[-1] - size + 1
+    indices = [min(e, maximum) for e in indices]
+    partitions = [a - b for (a, b) in zip(indices, list([0] + indices[:-1]))]
+    while partitions and partitions[-1] == 0:
+      partitions.pop()
     spec = tf.TensorSpec(
         tf.TensorShape(self.shape.dims[0] - size + 1).concatenate(size),
         self.dtype)
-    def function(resource, start, stop, step, component, shape, dtype):
-      _, _, _, _ = resource, component, shape, dtype
+    def function_read(resource, start, stop, dtype):
       return tf.reshape(
           tf.image.extract_patches(
               tf.reshape(
-                  self._function(
-                      self._resource,
-                      start, stop + size - 1, step,
-                      component=self._component,
-                      shape=[stop + size - 1 - start, 1], dtype=self.dtype),
-                  [1, 1, self.shape.dims[0], 1]),
+                  self._function_read(
+                      resource,
+                      start, stop + size - 1,
+                      dtype=self.dtype),
+                  [1, 1, stop + size - 1 - start, 1]),
               sizes=[1, 1, size, 1],
               strides=[1, 1, 1, 1],
               rates=[1, 1, 1, 1],
               padding='VALID'),
           spec.shape)
     return BaseIOTensor(spec,
-                        self._resource,
-                        function,
-                        component=self._component,
+                        partitions,
+                        self._function_init, function_read,
                         internal=True)
 
   #=============================================================================
