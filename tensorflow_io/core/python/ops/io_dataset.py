@@ -28,6 +28,7 @@ from tensorflow_io.core.python.ops import ffmpeg_dataset_ops
 from tensorflow_io.core.python.ops import json_dataset_ops
 from tensorflow_io.core.python.ops import parquet_dataset_ops
 from tensorflow_io.core.python.ops import pcap_dataset_ops
+from tensorflow_io.core.python.ops import redis_dataset_ops
 
 class IODataset(io_dataset_ops._IODataset):  # pylint: disable=protected-access
   """IODataset
@@ -342,3 +343,21 @@ class IOStreamDataset(io_dataset_ops._IOStreamDataset):  # pylint: disable=prote
           servers=kwargs.get("servers", None),
           configuration=kwargs.get("configuration", None),
           internal=True)
+
+  @classmethod
+  def from_redis(cls,
+                 channel,
+                 **kwargs):
+    """Creates an `IOStreamDataset` from a Redis channel.
+
+    Args:
+      channel: A string, the Redis channel subscribed..
+      name: A name prefix for the IOStreamDataset (optional).
+
+    Returns:
+      A `IOStreamDataset`.
+
+    """
+    with tf.name_scope(kwargs.get("name", "IOFromRedis")):
+      return redis_dataset_ops.RedisIOStreamDataset(
+          channel, internal=True, **kwargs)

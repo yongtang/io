@@ -609,3 +609,13 @@ http_archive(
         "https://tukaani.org/xz/xz-5.2.4.tar.gz",
     ],
 )
+
+http_archive(
+    name = "hiredis",
+    build_file = "//third_party:hiredis.BUILD",
+    sha256 = "042f965e182b80693015839a9d0278ae73fae5d5d09d8bf6d0e6a39a8c4393bd",
+    strip_prefix = "hiredis-0.14.0",
+    urls = [
+        "https://github.com/redis/hiredis/archive/v0.14.0.tar.gz",
+    ],
+)
