@@ -70,6 +70,22 @@ REGISTER_OP("IO>FfmpegDecodeVideo")
     return Status::OK();
   });
 
+REGISTER_OP("IO>FfmpegResampleAudio")
+  .Input("input: dtype")
+  .Input("in_channel_layout: string")
+  .Input("in_sample_rate: int64")
+  .Input("in_sample_fmt: string")
+  .Input("out_channel_layout: string")
+  .Input("out_sample_rate: int64")
+  .Input("out_sample_fmt: string")
+  .Output("value: dtype")
+  .Attr("dtype: type")
+  .SetShapeFn([](shape_inference::InferenceContext* c) {
+    c->set_output(0, c->MakeShape({c->UnknownDim(), c->UnknownDim()}));
+    return Status::OK();
+   });
+
+
 REGISTER_OP("IO>FfmpegAudioReadableInit")
   .Input("input: string")
   .Input("index: int64")

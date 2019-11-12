@@ -71,7 +71,7 @@ def fixture_audio_data_24():
     ],
     ids=["from_audio", "from_ffmpeg"],
 )
-def test_audio_io_tensor_24(audio_data_24, io_tensor_func):
+def _test_audio_io_tensor_24(audio_data_24, io_tensor_func):
   """test_audio_io_tensor_24"""
   audio_path, audio_value, audio_rate = audio_data_24
 
@@ -106,7 +106,7 @@ def test_audio_io_tensor_24(audio_data_24, io_tensor_func):
     ],
     ids=["from_audio", "from_ffmpeg"],
 )
-def test_audio_io_dataset_24(audio_data_24, io_dataset_func):
+def _test_audio_io_dataset_24(audio_data_24, io_dataset_func):
   """test_audio_io_dataset_24"""
   audio_path, audio_value, _ = audio_data_24
 
@@ -146,7 +146,7 @@ def test_audio_io_dataset_24(audio_data_24, io_dataset_func):
     ],
     ids=["from_audio", "from_ffmpeg"],
 )
-def test_audio_io_tensor(audio_data, io_tensor_func):
+def _test_audio_io_tensor(audio_data, io_tensor_func):
   """test_audio_io_tensor"""
   audio_path, audio_value, audio_rate = audio_data
 
@@ -187,7 +187,7 @@ def test_audio_io_tensor(audio_data, io_tensor_func):
     ],
     ids=["from_audio", "from_ffmpeg", "from_ffmpeg(eager)"],
 )
-def test_audio_io_dataset(audio_data, io_dataset_func):
+def _test_audio_io_dataset(audio_data, io_dataset_func):
   """test_audio_io_dataset"""
   audio_path, audio_value, _ = audio_data
 
@@ -225,7 +225,7 @@ def test_audio_io_dataset(audio_data, io_dataset_func):
     ],
     ids=["from_audio", "from_ffmpeg"],
 )
-def test_audio_io_tensor_with_dataset(audio_data, io_tensor_func):
+def _test_audio_io_tensor_with_dataset(audio_data, io_tensor_func):
   """test_audio_io_dataset_with_dataset"""
   audio_path, audio_value, audio_rate = audio_data
 
@@ -272,7 +272,7 @@ def test_audio_io_tensor_with_dataset(audio_data, io_tensor_func):
     ],
     ids=["from_audio", "from_ffmpeg"],
 )
-def test_audio_io_dataset_with_dataset(audio_data, io_dataset_func):
+def _test_audio_io_dataset_with_dataset(audio_data, io_dataset_func):
   """test_audio_io_dataset_with_dataset"""
   audio_path, audio_value, _ = audio_data
 
@@ -293,6 +293,61 @@ def test_audio_io_dataset_with_dataset(audio_data, io_dataset_func):
     return audio_dataset.skip(position).take(100)
 
   dataset = dataset.map(func)
+
+  item = 0
+  # Notice audio_dataset in dataset:
+  for audio_dataset in dataset:
+    position = 1000 if item == 0 else 2000
+    i = 0
+    for value in audio_dataset:
+      assert audio_value[position + i] == value
+      i += 1
+    assert i == 100
+    item += 1
+  assert item == 2
+
+@pytest.mark.parametrize(
+    ("io_dataset_func"),
+    [
+        #(tfio.IODataset.graph(tf.int16).from_audio),
+        pytest.param(
+            lambda f: tfio.IODataset.graph(tf.int16).from_ffmpeg(f, "a:0"),
+            marks=[
+                pytest.mark.skipif(
+                    sys.platform == "darwin",
+                    reason="macOS does not support FFmpeg"),
+            ],
+        ),
+    ],
+    ids=["from_ffmpeg"],
+)
+def test_audio_io_dataset_with_dataset(audio_data, io_dataset_func):
+  """test_audio_io_dataset_with_dataset"""
+  audio_path, audio_value, _ = audio_data
+
+  filename_dataset = tf.data.Dataset.from_tensor_slices(
+      [audio_path, audio_path])
+
+  # Note: @tf.function is actually not needed, as tf.data.Dataset
+  # will automatically wrap the `func` into a graph anyway.
+  # The following is purely for explanation purposes.
+  # Return: an embedded dataset (in an outer dataset) for position:position+100
+  @tf.function
+  def func(filename):
+    audio_dataset = io_dataset_func(filename)
+    audio_dataset = audio_dataset.batch(1000)
+    audio_dataset = audio_dataset.map(
+        lambda e: tfio.experimental.ffmpeg.resample_audio(
+            e,
+            in_channel_layout="",
+            in_sample_rate=10000,
+            in_sample_fmt="s16",
+            out_channel_layout="",
+            out_sample_rate=1000,
+            out_sample_fmt="s16"))
+    return audio_dataset
+
+  dataset = filename_dataset.map(func)
 
   item = 0
   # Notice audio_dataset in dataset:

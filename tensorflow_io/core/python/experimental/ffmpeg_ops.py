@@ -31,3 +31,24 @@ def decode_video(content, index=0, name=None):
   from tensorflow_io.core.python.ops import ffmpeg_ops
   return ffmpeg_ops.io_ffmpeg_decode_video(
       content, index, name=name)
+
+def resample_audio(
+    content,
+    in_channel_layout,
+    in_sample_rate,
+    in_sample_fmt,
+    out_channel_layout,
+    out_sample_rate,
+    out_sample_fmt,
+    name=None):
+  """resample_audio"""
+  from tensorflow_io.core.python.ops import ffmpeg_ops
+  return ffmpeg_ops.io_ffmpeg_resample_audio(
+      content,
+      in_channel_layout,
+      in_sample_rate,
+      in_sample_fmt,
+      out_channel_layout,
+      out_sample_rate,
+      out_sample_fmt,
+      name=name)

@@ -23,6 +23,8 @@ extern "C" {
 #include "libavformat/avformat.h"
 #include "libavutil/imgutils.h"
 #include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
+#include "libavutil/opt.h"
 #include <dlfcn.h>
 
 }
@@ -104,6 +106,7 @@ class FFmpegStream {
       return errors::InvalidArgument("unable to find codec id: ", codec_id);
     }
     codec_ = codec->name;
+std::cerr << "CHANNEL: " << codec->channel_layouts << std::endl;
 #if LIBAVCODEC_VERSION_MAJOR > 56
     codec_context_ = avcodec_alloc_context3(codec);
     if (codec_context_ == nullptr) {
@@ -122,6 +125,7 @@ class FFmpegStream {
     if (avcodec_open2(codec_context_, codec, &opts) < 0) {
       return errors::Internal("could not open codec");
     }
+std::cerr << "CHANNEL2: " << codec_context_->channel_layout << std::endl;
 
     nb_frames_ = format_context_->streams[stream_index]->nb_frames;
 
@@ -705,6 +709,93 @@ class FFmpegVideoReadableNextOp : public OpKernel {
   Env* env_ GUARDED_BY(mu_);
 };
 
+class FFmpegResampleAudioOp : public OpKernel {
+ public:
+  explicit FFmpegResampleAudioOp(OpKernelConstruction* context) : OpKernel(context) {
+    env_ = context->env();
+  }
+
+  void Compute(OpKernelContext* context) override {
+    const Tensor* input_tensor;
+    OP_REQUIRES_OK(context, context->input("input", &input_tensor));
+
+    const Tensor* in_channel_layout_tensor;
+    OP_REQUIRES_OK(context, context->input("in_channel_layout", &in_channel_layout_tensor));
+    int64 in_channel_layout = 0;
+    OP_REQUIRES(context, (in_channel_layout_tensor->scalar<string>()() == ""), errors::InvalidArgument("only wav file (channel layout '') supported"));
+
+    const Tensor* in_sample_rate_tensor;
+    OP_REQUIRES_OK(context, context->input("in_sample_rate", &in_sample_rate_tensor));
+    const int64 in_sample_rate = in_sample_rate_tensor->scalar<int64>()();
+
+    const Tensor* in_sample_fmt_tensor;
+    OP_REQUIRES_OK(context, context->input("in_sample_fmt", &in_sample_fmt_tensor));
+    enum AVSampleFormat in_sample_fmt = AV_SAMPLE_FMT_S16;
+    OP_REQUIRES(context, (in_sample_fmt_tensor->scalar<string>()() == "s16"), errors::InvalidArgument("only s16 sample format supported"));
+
+    const Tensor* out_channel_layout_tensor;
+    OP_REQUIRES_OK(context, context->input("out_channel_layout", &out_channel_layout_tensor));
+    int64 out_channel_layout = 0;
+    OP_REQUIRES(context, (out_channel_layout_tensor->scalar<string>()() == ""), errors::InvalidArgument("only wav file (channel layout '') supported"));
+
+    const Tensor* out_sample_rate_tensor;
+    OP_REQUIRES_OK(context, context->input("out_sample_rate", &out_sample_rate_tensor));
+    const int64 out_sample_rate = out_sample_rate_tensor->scalar<int64>()();
+
+    const Tensor* out_sample_fmt_tensor;
+    OP_REQUIRES_OK(context, context->input("out_sample_fmt", &out_sample_fmt_tensor));
+    enum AVSampleFormat out_sample_fmt = AV_SAMPLE_FMT_S16;
+    OP_REQUIRES(context, (out_sample_fmt_tensor->scalar<string>()() == "s16"), errors::InvalidArgument("only s16 sample format supported"));
+
+    FFmpegInit();
+
+    std::unique_ptr<SwrContext, void(*)(SwrContext*)> swr_context(swr_alloc(), [](SwrContext* p) { if (p != nullptr) { swr_free(&p); } });
+    OP_REQUIRES(context, (swr_context.get() != nullptr), errors::InvalidArgument("unable to allocate swr_context"));
+
+    // set options
+    int returned = 0;
+
+    returned = av_opt_set_int(swr_context.get(), "in_channel_layout",    in_channel_layout, 0);
+    OP_REQUIRES(context, (returned == 0), errors::InvalidArgument("unable to set in_channel_layout"));
+
+    returned = av_opt_set_int(swr_context.get(), "in_sample_rate",       in_sample_rate, 0);
+    OP_REQUIRES(context, (returned == 0), errors::InvalidArgument("unable to set in_sample_rate"));
+
+    returned = av_opt_set_sample_fmt(swr_context.get(), "in_sample_fmt", in_sample_fmt, 0);
+    OP_REQUIRES(context, (returned == 0), errors::InvalidArgument("unable to set in_sample_fmt"));
+
+    returned = av_opt_set_int(swr_context.get(), "out_channel_layout",    out_channel_layout, 0);
+    OP_REQUIRES(context, (returned == 0), errors::InvalidArgument("unable to set out_channel_layout"));
+
+    returned = av_opt_set_int(swr_context.get(), "out_sample_rate",       out_sample_rate, 0);
+    OP_REQUIRES(context, (returned == 0), errors::InvalidArgument("unable to set out_sample_rate"));
+
+    returned = av_opt_set_sample_fmt(swr_context.get(), "out_sample_fmt", out_sample_fmt, 0);
+    OP_REQUIRES(context, (returned == 0), errors::InvalidArgument("unable to set out_sample_fmt"));
+
+    returned = swr_init(swr_context.get());
+    OP_REQUIRES(context, (returned == 0), errors::InvalidArgument("unable to init swr_context"));
+
+    int64 channels = input_tensor->shape().dim_size(1);
+    OP_REQUIRES(context, (channels == 1), errors::InvalidArgument("only single channel supported"));
+
+    int64 in_samples = input_tensor->shape().dim_size(0);
+
+    int64 out_samples = av_rescale_rnd(in_samples, out_sample_rate, in_sample_rate, AV_ROUND_UP);
+    Tensor* value_tensor = nullptr;
+    OP_REQUIRES_OK(context, context->allocate_output(0, TensorShape({out_samples, input_tensor->shape().dim_size(1)}), &value_tensor));
+
+    uint8_t *in = (uint8_t *)(input_tensor->flat<int16>().data());
+    uint8_t *out = (uint8_t *)(value_tensor->flat<int16>().data());
+
+    returned = swr_convert(swr_context.get(), &out, out_samples, (const uint8_t **)&in, in_samples);
+    OP_REQUIRES(context, (returned == 0), errors::InvalidArgument("unable to swr_convert"));
+  }
+ private:
+  mutable mutex mu_;
+  Env* env_ GUARDED_BY(mu_);
+};
+
 REGISTER_KERNEL_BUILDER(Name("IO>FfmpegAudioReadableInit").Device(DEVICE_CPU),
                         FFmpegAudioReadableInitOp);
 REGISTER_KERNEL_BUILDER(Name("IO>FfmpegAudioReadableNext").Device(DEVICE_CPU),
@@ -714,6 +805,9 @@ REGISTER_KERNEL_BUILDER(Name("IO>FfmpegVideoReadableInit").Device(DEVICE_CPU),
                         FFmpegVideoReadableInitOp);
 REGISTER_KERNEL_BUILDER(Name("IO>FfmpegVideoReadableNext").Device(DEVICE_CPU),
                         FFmpegVideoReadableNextOp);
+
+REGISTER_KERNEL_BUILDER(Name("IO>FfmpegResampleAudio").Device(DEVICE_CPU),
+                        FFmpegResampleAudioOp);
 
 }  // namespace
 }  // namespace data
