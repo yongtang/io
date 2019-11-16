@@ -312,6 +312,20 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "graphics_ops",
+    srcs = [
+        "kernels/graphics_kernels.cc",
+    ],
+    copts = tf_io_copts(),
+    linkstatic = True,
+    deps = [
+        "//tensorflow_io/arrow:arrow_ops",
+        "//tensorflow_io/core:dataset_ops",
+"@filament",
+    ],
+)
+
 cc_binary(
     name = "python/ops/libtensorflow_io.so",
     copts = tf_io_copts(),

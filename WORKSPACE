@@ -629,3 +629,13 @@ http_archive(
         "https://github.com/openexr/openexr/archive/v2.4.0.tar.gz",
     ],
 )
+
+http_archive(
+    name = "filament",
+    build_file = "//third_party:filament.BUILD",
+    sha256 = "7ac03d1ee4bef953814b76e0c10a73706326ff74c057024231002603d9c246ac",
+    strip_prefix = "filament-1.4.2",
+    urls = [
+        "https://github.com/google/filament/archive/v1.4.2.tar.gz",
+    ],
+)
