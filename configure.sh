@@ -15,9 +15,9 @@
 # ==============================================================================
 
 rm -f .bazelrc
-if python -c "import tensorflow as tf" &> /dev/null; then
+if python3 -c "import tensorflow as tf" &> /dev/null; then
     echo 'using installed tensorflow'
 else
     python -m pip install $(python setup.py --package-version)
 fi
-python third_party/tf/configure.py
+python3 third_party/tf/configure.py

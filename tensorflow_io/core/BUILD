@@ -312,6 +312,19 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "graphics_ops",
+    srcs = [
+        "kernels/graphics_kernels.cc",
+    ],
+    copts = tf_io_copts(),
+    linkstatic = True,
+    deps = [
+        "//tensorflow_io/core:dataset_ops",
+        "@filament",
+    ],
+)
+
 cc_binary(
     name = "python/ops/libtensorflow_io.so",
     copts = tf_io_copts(),
@@ -326,6 +339,7 @@ cc_binary(
         "//tensorflow_io/core:core_ops",
         "//tensorflow_io/core:cpuinfo",
         "//tensorflow_io/core:genome_ops",
+        "//tensorflow_io/core:graphics_ops",
         "//tensorflow_io/core:hdf5_ops",
         "//tensorflow_io/core:image_ops",
         "//tensorflow_io/core:lmdb_ops",
