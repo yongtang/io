@@ -4,6 +4,23 @@ load("//third_party/tf:tf_configure.bzl", "tf_configure")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 
+http_archive(
+    name = "com_grail_bazel_toolchain",
+    strip_prefix = "bazel-toolchain-0.4.4",
+    urls = ["https://github.com/grailbio/bazel-toolchain/archive/0.4.4.tar.gz"],
+)
+
+load("@com_grail_bazel_toolchain//toolchain:rules.bzl", "llvm_toolchain")
+
+llvm_toolchain(
+    name = "llvm_toolchain",
+    llvm_version = "8.0.0",
+)
+
+load("@llvm_toolchain//:toolchains.bzl", "llvm_register_toolchains")
+
+llvm_register_toolchains()
+
 tf_configure(
     name = "local_config_tf",
 )
@@ -633,9 +650,9 @@ http_archive(
 http_archive(
     name = "filament",
     build_file = "//third_party:filament.BUILD",
-    sha256 = "7ac03d1ee4bef953814b76e0c10a73706326ff74c057024231002603d9c246ac",
-    strip_prefix = "filament-1.4.2",
+    sha256 = "76f47d6b9da598a9b74725f175cfdb9e736c7a89d242956ee382c944131e6cb6",
+    strip_prefix = "filament-72dbea256a94c80d8cd7841f2847fd29e52a48a6",
     urls = [
-        "https://github.com/google/filament/archive/v1.4.2.tar.gz",
+        "https://github.com/google/filament/archive/72dbea256a94c80d8cd7841f2847fd29e52a48a6.tar.gz",
     ],
 )

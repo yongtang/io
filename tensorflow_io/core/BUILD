@@ -320,9 +320,8 @@ cc_library(
     copts = tf_io_copts(),
     linkstatic = True,
     deps = [
-        "//tensorflow_io/arrow:arrow_ops",
         "//tensorflow_io/core:dataset_ops",
-"@filament",
+        "@filament",
     ],
 )
 
@@ -352,9 +351,9 @@ cc_binary(
         "//tensorflow_io/ignite:ignite_ops",
         "//tensorflow_io/json:json_ops",
         "//tensorflow_io/kafka:kafka_ops",
-        "//tensorflow_io/kinesis:kinesis_ops",
         "//tensorflow_io/oss:oss_ops",
         "//tensorflow_io/pubsub:pubsub_ops",
+        "//tensorflow_io/core:graphics_ops",
         "@libarchive",
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",

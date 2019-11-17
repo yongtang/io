@@ -38,6 +38,14 @@ class GraphicsRenderOp : public OpKernel {
     orientation_tensor->scalar<int64>()() = 0;
 
     const string& input = input_tensor->scalar<string>()();
+
+    filament::Engine* mEngine = filament::Engine::create();
+    filament::SwapChain* mSurface = mEngine->createSwapChain(16, 16);
+    filament::Renderer* mRenderer = mEngine->createRenderer();
+    filament::Scene* mScene = mEngine->createScene();
+    filament::Camera* mCamera = mEngine->createCamera();
+    filament::View* mView = mEngine->createView();
+
     //easyexif::EXIFInfo result;
     //if (result.parseFrom(input) == PARSE_EXIF_SUCCESS) {
     //  orientation_tensor->scalar<int64>()() = result.Orientation;
