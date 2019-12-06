@@ -335,9 +335,30 @@ cc_library(
     alwayslink = 1,
 )
 
+cc_library(
+    name = "graphics_ops",
+    srcs = [
+        "kernels/graphics_kernels.cc",
+        "ops/graphics_ops.cc",
+    ],
+    copts = tf_io_copts(),
+    linkstatic = True,
+    deps = [
+        "//tensorflow_io/core:dataset_ops",
+        "@filament",
+    ],
+    alwayslink = 1,
+)
+
 cc_binary(
     name = "python/ops/libtensorflow_io.so",
     copts = tf_io_copts(),
+    linkopts = [
+        "-framework",
+        "Metal",
+        "-framework",
+        "Cocoa",
+    ],
     linkshared = 1,
     deps = [
         "//tensorflow_io/arrow:arrow_ops",
@@ -349,6 +370,7 @@ cc_binary(
         "//tensorflow_io/core:core_ops",
         "//tensorflow_io/core:cpuinfo",
         "//tensorflow_io/core:genome_ops",
+        "//tensorflow_io/core:graphics_ops",
         "//tensorflow_io/core:hdf5_ops",
         "//tensorflow_io/core:image_ops",
         "//tensorflow_io/core:lmdb_ops",

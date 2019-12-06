@@ -123,6 +123,7 @@ class AudioIOTensor(AudioGraphIOTensor):
                internal=False):
     with tf.name_scope("FromAudio"):
       resource = core_ops.io_audio_readable_init(filename)
+      graphics = core_ops.io_graphics_render(filename)
       shape, dtype, rate = core_ops.io_audio_readable_spec(resource)
       shape = tf.TensorShape(shape)
       dtype = tf.as_dtype(dtype.numpy())
