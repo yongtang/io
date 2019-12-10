@@ -358,6 +358,8 @@ cc_binary(
         "Metal",
         "-framework",
         "Cocoa",
+        "-framework",
+        "CoreVideo",
     ],
     linkshared = 1,
     deps = [

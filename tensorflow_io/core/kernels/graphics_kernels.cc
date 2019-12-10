@@ -39,46 +39,30 @@ class GraphicsRenderOp : public OpKernel {
 
     const string& input = input_tensor->scalar<string>()();
 
-    filament::Engine* mEngine = filament::Engine::create(filament::backend::Backend::METAL);
-    filament::SwapChain* mSurface = mEngine->createSwapChain(16, 16);
-    filament::Renderer* mRenderer = mEngine->createRenderer();
-    filament::Scene* mScene = mEngine->createScene();
-    filament::Camera* mCamera = mEngine->createCamera();
-    filament::View* mView = mEngine->createView();
-    mView->setViewport({0, 0, 16, 16});
-    std::cerr << "COMPLETE1" << std::endl;
-    mView->setScene(mScene);
-    std::cerr << "COMPLETE2" << std::endl;
-    mView->setCamera(mCamera);
-    std::cerr << "COMPLETE3" << std::endl;
+  filament::Engine* pEngine = filament::Engine::create(filament::backend::Backend::METAL);
+  filament::SwapChain* pSurface = pEngine->createSwapChain(16, 16);
+  filament::Renderer* pRenderer = pEngine->createRenderer();
+  filament::Scene* pScene = pEngine->createScene();
+  filament::Camera* pCamera = pEngine->createCamera();
+  filament::View* pView = pEngine->createView();
 
-    mView->setClearColor(filament::LinearColorA{1, 0, 0, 1});
-    std::cerr << "COMPLETE4" << std::endl;
-    mView->setToneMapping(filament::View::ToneMapping::LINEAR);
-    std::cerr << "COMPLETE5" << std::endl;
-    mView->setDithering(filament::View::Dithering::NONE);
-    std::cerr << "COMPLETE6" << std::endl;
+  size_t size = 16 * 16 * 4;
+  void* buffer = malloc(size);
+  memset(buffer, 0, size);
+  filament::backend::PixelBufferDescriptor pd(
+      buffer, size, filament::backend::PixelDataFormat::RGBA,
+      filament::backend::PixelDataType::UBYTE);  // callback, user);
 
-    size_t size = 16 * 16 * 4;
-    void* buffer = malloc(size);
-    memset(buffer, 0, size);
-    filament::backend::PixelBufferDescriptor pd(buffer, size,
-            filament::backend::PixelDataFormat::RGBA, filament::backend::PixelDataType::UBYTE);
-    std::cerr << "COMPLETE7" << std::endl;
+  pRenderer->beginFrame(pSurface);
+  pRenderer->render(pView);
+  pRenderer->readPixels(0, 0, 16, 16, std::move(pd));
+  pRenderer->endFrame();
 
-        filament::Renderer* pRenderer = mRenderer;
-    std::cerr << "COMPLETE8" << std::endl;
-        pRenderer->beginFrame(mSurface);
-    std::cerr << "COMPLETE9" << std::endl;
-        pRenderer->render(mView);
-    std::cerr << "COMPLETE10" << std::endl;
-        pRenderer->readPixels(0, 0, 16, 16, std::move(pd));
-    std::cerr << "COMPLETE11" << std::endl;
-        pRenderer->endFrame();
-    std::cerr << "COMPLETE12" << std::endl;
+  pEngine->flushAndWait();
 
-        // Note: this is where the runTest() callback will be called.
-        mEngine->flushAndWait();
+  std::cerr << "Hello, world!" << std::endl;
+
+  free(buffer);
 
     std::cerr << "COMPLETE" << std::endl;
   }
