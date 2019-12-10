@@ -22,11 +22,9 @@ namespace io {
 namespace {
 
 REGISTER_OP("IO>GraphicsRender")
-    .Input("input: resource")
-    .Input("start: int64")
-    .Input("stop: int64")
-    .Output("value: dtype")
-    .Attr("dtype: type")
+    .Input("input: string")
+    .Input("index: int64")
+    .Output("value: string")
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->MakeShape({c->UnknownDim(), c->UnknownDim()}));
       return Status::OK();

@@ -39,19 +39,59 @@ class GraphicsRenderOp : public OpKernel {
 
     const string& input = input_tensor->scalar<string>()();
 
-    filament::Engine* mEngine = filament::Engine::create();
+    filament::Engine* mEngine = filament::Engine::create(filament::backend::Backend::METAL);
     filament::SwapChain* mSurface = mEngine->createSwapChain(16, 16);
     filament::Renderer* mRenderer = mEngine->createRenderer();
     filament::Scene* mScene = mEngine->createScene();
     filament::Camera* mCamera = mEngine->createCamera();
     filament::View* mView = mEngine->createView();
+    mView->setViewport({0, 0, 16, 16});
+    std::cerr << "COMPLETE1" << std::endl;
+    mView->setScene(mScene);
+    std::cerr << "COMPLETE2" << std::endl;
+    mView->setCamera(mCamera);
+    std::cerr << "COMPLETE3" << std::endl;
 
-    //easyexif::EXIFInfo result;
-    //if (result.parseFrom(input) == PARSE_EXIF_SUCCESS) {
-    //  orientation_tensor->scalar<int64>()() = result.Orientation;
-    //}
+    mView->setClearColor(filament::LinearColorA{1, 0, 0, 1});
+    std::cerr << "COMPLETE4" << std::endl;
+    mView->setToneMapping(filament::View::ToneMapping::LINEAR);
+    std::cerr << "COMPLETE5" << std::endl;
+    mView->setDithering(filament::View::Dithering::NONE);
+    std::cerr << "COMPLETE6" << std::endl;
+
+    size_t size = 16 * 16 * 4;
+    void* buffer = malloc(size);
+    memset(buffer, 0, size);
+    filament::backend::PixelBufferDescriptor pd(buffer, size,
+            filament::backend::PixelDataFormat::RGBA, filament::backend::PixelDataType::UBYTE);
+    std::cerr << "COMPLETE7" << std::endl;
+
+        filament::Renderer* pRenderer = mRenderer;
+    std::cerr << "COMPLETE8" << std::endl;
+        pRenderer->beginFrame(mSurface);
+    std::cerr << "COMPLETE9" << std::endl;
+        pRenderer->render(mView);
+    std::cerr << "COMPLETE10" << std::endl;
+        pRenderer->readPixels(0, 0, 16, 16, std::move(pd));
+    std::cerr << "COMPLETE11" << std::endl;
+        pRenderer->endFrame();
+    std::cerr << "COMPLETE12" << std::endl;
+
+        // Note: this is where the runTest() callback will be called.
+        mEngine->flushAndWait();
+
     std::cerr << "COMPLETE" << std::endl;
   }
+private:
+/*
+    static void callback(void* buffer, size_t size, void* user) {
+        closure_t* closure = (closure_t *)user;
+        uint8_t const* rgba = (uint8_t const*)buffer;
+        (*closure)(rgba, 16, 16);
+        delete closure;
+        ::free(buffer);
+    }
+*/
 };
 REGISTER_KERNEL_BUILDER(Name("IO>GraphicsRender").Device(DEVICE_CPU),
                         GraphicsRenderOp);

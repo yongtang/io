@@ -492,6 +492,7 @@ class GraphIOTensor(io_tensor_ops._IOTensor):  # pylint: disable=protected-acces
     """
     with tf.name_scope(kwargs.get("name", "IOFromAudio")):
       resource = core_ops.io_audio_readable_init(filename)
+      graphics = core_ops.io_graphics_render(filename, 0)
       dtype = cls._dtype
       shape, _, rate = core_ops.io_audio_readable_spec(resource)
       shape = tf.unstack(shape)
