@@ -19,39 +19,6 @@ limitations under the License.
 
 namespace tensorflow {
 
-REGISTER_OP("IO>EncodeAvro")
-  .Input("input: dtype")
-  .Output("string: string")
-  .Attr("schema: string")
-  .Attr("dtype: list({float,double,int32,int64,string})")
-  .SetShapeFn([](shape_inference::InferenceContext* c) {
-    c->set_output(0, c->input(0));
-    return Status::OK();
-   });
-
-REGISTER_OP("IO>DecodeAvroInit")
-  .Input("input: string")
-  .Output("resource: resource")
-  .Attr("container: string = ''")
-  .Attr("shared_name: string = ''")
-  .SetShapeFn([](shape_inference::InferenceContext* c) {
-    c->set_output(0, c->Scalar());
-    return Status::OK();
-   });
-
-REGISTER_OP("IO>DecodeAvro")
-  .Input("input: string")
-  .Input("schema: T")
-  .Output("value: dtype")
-  .Attr("dtype: list({float,double,int32,int64,string})")
-  .Attr("T: {string, resource}")
-  .SetShapeFn([](shape_inference::InferenceContext* c) {
-    for (int64 i = 0; i < c->num_outputs(); i++) {
-      c->set_output(i, c->input(0));
-    }
-    return Status::OK();
-   });
-
 REGISTER_OP("IO>KafkaReadableInit")
   .Input("input: string")
   .Input("metadata: string")
