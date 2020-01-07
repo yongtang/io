@@ -74,6 +74,40 @@ def decode_json(data, specs, name=None):
   values = core_ops.io_decode_json(data, names, shapes, dtypes, name=name)
   return tf.nest.pack_sequence_as(specs, values)
 
+def encode_json(data, specs, name=None):
+  """
+  Encode Tensors into JSON string.
+
+  TODO: support batch (1-D) input
+
+  Args:
+    data: A list of tensors to encode.
+    specs: A structured TensorSpecs describing the signature
+      of the JSON elements.
+    name: A name for the operation (optional).
+
+  Returns:
+    A JSON-encoded string Tensor.
+  """
+  # Make a copy of specs to keep the original specs
+  named = tf.nest.map_structure(lambda e: _NamedTensorSpec(e.shape, e.dtype), specs)
+  named_spec(named)
+  named = tf.nest.flatten(named)
+  names = [e.named() for e in named]
+  #shapes = [e.shape for e in named]
+  #dtypes = [e.dtype for e in named]
+
+  #values = core_ops.io_decode_json(data, names, shapes, dtypes, name=name)
+  #return tf.nest.pack_sequence_as(specs, values)
+
+  print("DATA0: ", data)
+  data = tf.nest.flatten(data)
+  print("DATA1: ", data)
+  print("NAMES: ", names)
+  values = core_ops.io_encode_json(
+      data, names, name=name)
+  return values
+
 
 def process_primitive(data, name):
   """process_primitive"""
@@ -131,6 +165,7 @@ def decode_avro(data, schema, name=None):
   Returns:
     A structured Tensors.
   """
+  # TODO: Use resource to reuse schema initialization
   specs = process_entry(json.loads(schema), '')
 
   entries = tf.nest.flatten(specs)
@@ -138,7 +173,7 @@ def decode_avro(data, schema, name=None):
   shapes = [e.shape for e in entries]
   dtypes = [e.dtype for e in entries]
 
-  values = core_ops.io_decode_avro_v(
+  values = core_ops.io_decode_avro(
       data, names, schema, shapes, dtypes, name=name)
   return tf.nest.pack_sequence_as(specs, values)
 
@@ -154,6 +189,7 @@ def encode_avro(data, schema, name=None):
   Returns:
     An Avro-encoded string Tensor.
   """
+  # TODO: Use resource to reuse schema initialization
   specs = process_entry(json.loads(schema), '')
 
   entries = tf.nest.flatten(specs)
@@ -161,6 +197,6 @@ def encode_avro(data, schema, name=None):
 
   data = tf.nest.flatten(data)
 
-  values = core_ops.io_encode_avro_v(
+  values = core_ops.io_encode_avro(
       data, names, schema, name=name)
   return values

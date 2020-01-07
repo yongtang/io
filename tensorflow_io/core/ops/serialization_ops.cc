@@ -47,7 +47,18 @@ REGISTER_OP("IO>DecodeJSON")
       return Status::OK();
     });
 
-REGISTER_OP("IO>DecodeAvroV")
+REGISTER_OP("IO>EncodeJSON")
+    .Input("input: dtype")
+    .Input("names: string")
+    .Output("value: string")
+    .Attr("dtype: list({bool,int32,int64,float,double,string})")
+    .SetShapeFn([](shape_inference::InferenceContext* c) {
+      c->set_output(0, c->input(0));
+      return Status::OK();
+    });
+
+
+REGISTER_OP("IO>DecodeAvro")
     .Input("input: string")
     .Input("names: string")
     .Input("schema: string")
@@ -74,7 +85,7 @@ REGISTER_OP("IO>DecodeAvroV")
       return Status::OK();
     });
 
-REGISTER_OP("IO>EncodeAvroV")
+REGISTER_OP("IO>EncodeAvro")
     .Input("input: dtype")
     .Input("names: string")
     .Input("schema: string")

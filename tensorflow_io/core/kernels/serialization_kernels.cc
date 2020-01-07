@@ -136,6 +136,52 @@ class DecodeJSONOp : public OpKernel {
   std::vector<TensorShape> shapes_ GUARDED_BY(mu_);
 };
 
+class EncodeJSONOp : public OpKernel {
+ public:
+  explicit EncodeJSONOp(OpKernelConstruction* context) : OpKernel(context) {
+    env_ = context->env();
+  }
+
+  void Compute(OpKernelContext* context) override {
+    const Tensor* names_tensor;
+    OP_REQUIRES_OK(context, context->input("names", &names_tensor));
+
+    // Make sure input and names have the same elements
+    OP_REQUIRES(
+        context, (context->num_inputs() - 1 == names_tensor->NumElements()),
+        errors::InvalidArgument("number of elements different: inputs (",
+                                context->num_inputs() - 1, ") vs. names(",
+                                names_tensor->NumElements(), ")"));
+std::cerr << "INPUT: " << std::endl;
+    // Make sure input have the same elements;
+    for (int64 i = 1; i < context->num_inputs() - 1; i++) {
+      OP_REQUIRES(
+          context,
+          (context->input(0).NumElements() == context->input(i).NumElements()),
+          errors::InvalidArgument("number of elements different: input 0 (",
+                                  context->input(0).NumElements(),
+                                  ") vs. input ", i, " (",
+                                  context->input(i).NumElements(), ")"));
+    }
+
+    std::unordered_map<string, const Tensor*> values;
+    for (int64 i = 0; i < names_tensor->NumElements(); i++) {
+      values[names_tensor->flat<string>()(i)] = &context->input(i);
+    }
+
+    Tensor* value_tensor = nullptr;
+    OP_REQUIRES_OK(context, context->allocate_output(
+                                0, context->input(0).shape(), &value_tensor));
+    for (int64 entry_index = 0; entry_index < context->input(0).NumElements();
+         entry_index++) {
+      //value_tensor->flat<string>()(entry_index) = ss.str();
+    }
+  }
+
+ private:
+  mutable mutex mu_;
+  Env* env_ GUARDED_BY(mu_);
+};
 class DecodeAvroOp : public OpKernel {
  public:
   explicit DecodeAvroOp(OpKernelConstruction* context) : OpKernel(context) {
@@ -495,10 +541,9 @@ class EncodeAvroOp : public OpKernel {
 };
 
 REGISTER_KERNEL_BUILDER(Name("IO>DecodeJSON").Device(DEVICE_CPU), DecodeJSONOp);
-REGISTER_KERNEL_BUILDER(Name("IO>DecodeAvroV").Device(DEVICE_CPU),
-                        DecodeAvroOp);
-REGISTER_KERNEL_BUILDER(Name("IO>EncodeAvroV").Device(DEVICE_CPU),
-                        EncodeAvroOp);
+REGISTER_KERNEL_BUILDER(Name("IO>EncodeJSON").Device(DEVICE_CPU), EncodeJSONOp);
+REGISTER_KERNEL_BUILDER(Name("IO>DecodeAvro").Device(DEVICE_CPU), DecodeAvroOp);
+REGISTER_KERNEL_BUILDER(Name("IO>EncodeAvro").Device(DEVICE_CPU), EncodeAvroOp);
 
 }  // namespace
 }  // namespace data

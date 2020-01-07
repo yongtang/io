@@ -137,11 +137,16 @@ def test_serialization_decode(
     ("serialization_fixture", "encode_function", "decode_function"),
     [
         pytest.param(
+            "json",
+            tfio.experimental.serialization.encode_json,
+            tfio.experimental.serialization.decode_json),
+        pytest.param(
             "avro",
             tfio.experimental.serialization.encode_avro,
             tfio.experimental.serialization.decode_avro),
     ],
     ids=[
+        "json",
         "avro",
     ],
 )
