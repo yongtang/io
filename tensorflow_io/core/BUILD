@@ -440,6 +440,7 @@ cc_binary(
     copts = tf_io_copts(),
     linkshared = 1,
     deps = [
+        "//tensorflow_io/core:genome_ops",
         "//tensorflow_io/core:image_ops",
         "//tensorflow_io/core:lmdb_ops",
         "//tensorflow_io/core:numpy_ops",
@@ -457,7 +458,6 @@ cc_binary(
             "//tensorflow_io/core:core_ops",
             "//tensorflow_io/core:cpuinfo",
             "//tensorflow_io/core:file_ops",
-            "//tensorflow_io/core:genome_ops",
             "//tensorflow_io/core:grpc_ops",
             "//tensorflow_io/core:hdf5_ops",
             "//tensorflow_io/core:json_ops",

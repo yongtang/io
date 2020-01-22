@@ -101,6 +101,30 @@ http_archive(
 )
 
 http_archive(
+    name = "htslib",
+    build_file = "//third_party:htslib.BUILD",
+    sha256 = "d2e3cde77b8f874b37453c63390cd992901266336e9f70e871ef42402510467f",
+    strip_prefix = "htslib-1.9",
+    urls = [
+        "https://github.com/samtools/htslib/archive/1.9.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "nucleus",
+    build_file = "//third_party:nucleus.BUILD",
+    patch_cmds = [
+        "rm -f nucleus/protos/BUILD",
+        "rm -f nucleus/BUILD",
+    ],
+    sha256 = "33af03caab138eb1858913128e651e52a85491bb8c9029705be97413a9aba2f5",
+    strip_prefix = "nucleus-0.5.0",
+    urls = [
+        "https://github.com/google/nucleus/archive/0.5.0.tar.gz",
+    ],
+)
+
+http_archive(
     name = "com_google_absl",
     sha256 = "acd93f6baaedc4414ebd08b33bebca7c7a46888916101d8c0b8083573526d070",
     strip_prefix = "abseil-cpp-43ef2148c0936ebf7cb4be6b19927a9d9d145b8f",
@@ -573,20 +597,6 @@ http_archive(
 )
 
 http_archive(
-    name = "nucleus",
-    build_file = "//third_party:nucleus.BUILD",
-    patch_args = ["-p1"],
-    patches = [
-        "//third_party:nucleus.patch",
-    ],
-    sha256 = "aa865d3509ba8f3527392303bd95a11f48f19e68197b3d1d0bae9fab004bee87",
-    strip_prefix = "nucleus-0.4.1",
-    urls = [
-        "https://github.com/google/nucleus/archive/0.4.1.tar.gz",
-    ],
-)
-
-http_archive(
     name = "bzip2",
     build_file = "//third_party:bzip2.BUILD",
     sha256 = "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269",
@@ -600,17 +610,6 @@ http_archive(
     name = "com_googlesource_code_cctz",
     strip_prefix = "cctz-master",
     urls = ["https://github.com/google/cctz/archive/master.zip"],
-)
-
-# This is the 1.9 release of htslib.
-http_archive(
-    name = "htslib",
-    build_file = "//third_party:htslib.BUILD",
-    sha256 = "c4d3ae84014f8a80f5011521f391e917bc3b4f6ebd78e97f238472e95849ec14",
-    strip_prefix = "htslib-1.9",
-    urls = [
-        "https://github.com/samtools/htslib/archive/1.9.zip",
-    ],
 )
 
 http_archive(

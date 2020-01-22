@@ -267,6 +267,8 @@ jobs:
           (python -m pytest -s -v test_image_eager.py -k "webp or ppm or bmp or bounding or exif or hdr")
           (python -m pytest -s -v test_serialization_eager.py)
           (python -m pytest -s -v test_io_dataset_eager.py -k "numpy")
+          (python -m pytest -s -v test_genome_eager.py)
+          (python -m pytest -s -v test_genome.py)
 
   release:
     name: Release
