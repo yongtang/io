@@ -52,6 +52,12 @@ genrule(
     cmd = """echo '#define HTS_VERSION "%s"' > "$@" """ % version,
 )
 
+genrule(
+    name = "strings",
+    outs = ["strings.h"],
+    cmd = """echo '#include <string.h>' > "$@" """,
+)
+
 # Vanilla htslib, no extensions.
 cc_library(
     name = "htslib",
@@ -111,7 +117,12 @@ cc_library(
         "vcf_sweep.c",
         "vcfutils.c",
         "version.h",
-    ],
+    ] + select({
+        "@bazel_tools//src/conditions:windows": [
+"strings.h",
+],
+        "//conditions:default": [],
+    }),
     # Genrules in lieu of ./configure.  Minimum viable linux.
     hdrs = glob(["htslib/*.h"]) + [
         "cram/cram.h",
