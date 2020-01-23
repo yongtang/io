@@ -117,11 +117,14 @@ cc_library(
         "cram/cram.h",
         "cram/pooled_alloc.h",
     ],
-    copts = [
+    copts = select({
+        "@bazel_tools//src/conditions:windows": [],
+        "//conditions:default": [
         "-Wno-implicit-function-declaration",  # cram_io.c
         "-Wno-unused-variable",  # cram_encode.c
         "-Wno-error",
-    ],
+        ],
+    }),
     includes = ["."],
     textual_hdrs = [
         "cram/cram_samtools.h",
