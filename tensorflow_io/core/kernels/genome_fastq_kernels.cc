@@ -17,6 +17,10 @@ limitations under the License.
 #include <vector>
 
 #include <utility>
+#if defined(MSC_VER)
+#include <windows.h>
+#undef DELETE
+#endif
 #include "nucleus/io/fastq_reader.h"
 #include "nucleus/platform/types.h"
 #include "nucleus/protos/fastq.pb.h"
