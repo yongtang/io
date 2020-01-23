@@ -105,6 +105,9 @@ cc_library(
         "@nucleus//nucleus/util:utils.h",
         "@nucleus//nucleus/vendor:statusor.h",
     ],
+defines = [
+"WIN32_MEAN_AND_LEAN",
+],
     visibility = ["//visibility:public"],
     deps = [
         ":fastq_cc_pb2",
