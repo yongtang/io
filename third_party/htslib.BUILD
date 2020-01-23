@@ -34,7 +34,7 @@ genrule(
         echo '#define HAVE_SYS_PARAM_H 1'
         echo '#define HAVE_SYS_STAT_H 1'
         echo '#define HAVE_SYS_TYPES_H 1'
-        echo '#define HAVE_UNISTD_H 1'
+        #echo '#define HAVE_UNISTD_H 1'
         echo '#define PACKAGE_BUGREPORT "samtools-help@lists.sourceforge.net"'
         echo '#define PACKAGE_NAME "HTSlib"'
         echo '#define PACKAGE_STRING "HTSlib %s"'
