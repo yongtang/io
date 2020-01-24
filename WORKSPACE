@@ -123,9 +123,6 @@ http_archive(
 http_archive(
     name = "kafka",
     build_file = "//third_party:kafka.BUILD",
-    patch_cmds = [
-        "rm -f src/win32_config.h",
-    ],
     sha256 = "465cab533ebc5b9ca8d97c90ab69e0093460665ebaf38623209cf343653c76d2",
     strip_prefix = "librdkafka-1.3.0",
     urls = [
