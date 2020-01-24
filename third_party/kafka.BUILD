@@ -55,9 +55,14 @@ cc_library(
     linkopts = [],
     visibility = ["//visibility:public"],
     deps = [
-        "@boringssl//:ssl",
         "@zlib",
-    ],
+    ] + select({
+        "@bazel_tools//src/conditions:windows": [
+        ],
+        "//conditions:default": [
+            "@boringssl//:ssl",
+        ],
+    }),
 )
 
 genrule(
