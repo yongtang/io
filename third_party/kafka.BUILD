@@ -22,7 +22,6 @@ cc_library(
 "src/rdkafka_zstd.c",
 "src/rdkafka_zstd.h",
 "src/snappy.c",
-"src/snappy.h",
             "src/rdkafka_sasl_cyrus.c",
             "src/rdkafka_sasl_win32.c",
             "src/xxhash.c",
