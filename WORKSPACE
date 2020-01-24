@@ -123,10 +123,10 @@ http_archive(
 http_archive(
     name = "kafka",
     build_file = "//third_party:kafka.BUILD",
-    sha256 = "465cab533ebc5b9ca8d97c90ab69e0093460665ebaf38623209cf343653c76d2",
-    strip_prefix = "librdkafka-1.3.0",
+    sha256 = "5848f346759546efc00dc5afafdff00ed1fdfd16a93d857649e6a7f82e2d222d",
+    strip_prefix = "librdkafka-1.4.0-PRE6",
     urls = [
-        "https://github.com/edenhill/librdkafka/archive/v1.3.0.tar.gz",
+        "https://github.com/edenhill/librdkafka/archive/v1.4.0-PRE6.tar.gz",
     ],
 )
 
