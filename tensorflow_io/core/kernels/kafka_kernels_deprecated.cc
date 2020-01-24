@@ -172,9 +172,10 @@ class KafkaDatasetOp : public DatasetOpKernel {
         switch (event.type()) {
           case RdKafka::Event::EVENT_ERROR:
             LOG(ERROR) << "EVENT_ERROR: "
+                       << (event.fatal() ? "FATAL|" : "")
                        << "(" << RdKafka::err2str(event.err())
                        << "): " << event.str();
-            if (event.err() == RdKafka::ERR__ALL_BROKERS_DOWN) run_ = false;
+            { run_ = !(event.fatal()); }
             break;
 
           case RdKafka::Event::EVENT_STATS:
@@ -758,9 +759,10 @@ class KafkaEventCb : public RdKafka::EventCb {
     switch (event.type()) {
       case RdKafka::Event::EVENT_ERROR:
         LOG(ERROR) << "EVENT_ERROR: "
+                   << (event.fatal() ? "FATAL|" : "")
                    << "(" << RdKafka::err2str(event.err())
                    << "): " << event.str();
-        { run_ = (event.err() != RdKafka::ERR__ALL_BROKERS_DOWN); }
+        { run_ = !(event.fatal()); }
         break;
       case RdKafka::Event::EVENT_STATS:
         LOG(ERROR) << "EVENT_STATS: " << event.str();
