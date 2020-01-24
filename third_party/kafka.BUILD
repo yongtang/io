@@ -19,6 +19,8 @@ cc_library(
             "src/rddl.h",
             "src/rdkafka_plugin.c",
             "src/rdkafka_plugin.h",
+"src/rdkafka_zstd.c",
+"src/rdkafka_zstd.h",
             "src/rdkafka_sasl_cyrus.c",
             "src/rdkafka_sasl_win32.c",
             "src/xxhash.c",
@@ -55,7 +57,6 @@ cc_library(
     deps = [
         "@boringssl//:ssl",
         "@zlib",
-        "@zstd",
     ],
 )
 
@@ -80,8 +81,6 @@ genrule(
         "#define WITH_SSL 1",
         "#define WITH_ZLIB 1",
         "#define WITH_SNAPPY 1",
-        "#define WITH_ZSTD 1",
-        "#define WITH_ZSTD_STATIC 1",
         "#define WITH_SASL 1",
         "#define WITH_SASL_SCRAM 1",
         "#define WITH_SASL_OAUTHBEARER 1",
