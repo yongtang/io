@@ -33,3 +33,5 @@ jobs:
           ls -la
           cd CMake-hdf5-1.10.6
           ctest -S HDF5config.cmake,BUILD_GENERATOR=VS201964 -C Release -VV
+          cd ..
+          
