@@ -113,10 +113,10 @@ http_archive(
 http_archive(
     name = "com_github_azure_azure_storage_cpplite",
     build_file = "//third_party:azure.BUILD",
-    sha256 = "597d9894061f4871a909f1c2c3f56725a69c188ea17784cc71e1e170687faf00",
-    strip_prefix = "azure-storage-cpplite-0.2.0",
+    sha256 = "a0c315120ba15c4fae64aacecc7473f6a6b2be765d493ec5d183d774eefc10eb",
+    strip_prefix = "azure-storage-cpplite-d57610340eae795d57959db106fd7216426d63b7",
     urls = [
-        "https://github.com/Azure/azure-storage-cpplite/archive/v0.2.0.tar.gz",
+        "https://github.com/Azure/azure-storage-cpplite/archive/d57610340eae795d57959db106fd7216426d63b7.zip",
     ],
 )
 
