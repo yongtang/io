@@ -15,6 +15,12 @@ cc_library(
         "src/blob/*.cpp",
     ]),
     hdrs = [],
+    copts = select({
+        "@bazel_tools//src/conditions:windows": [
+            "/std:c++latest",
+        ],
+        "//conditions:default": [],
+    }),
     defines = [
         "azure_storage_lite_EXPORTS",
         "USE_OPENSSL",
