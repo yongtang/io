@@ -22,6 +22,7 @@ cc_library(
         "@bazel_tools//src/conditions:windows": [
             "WIN32_LEAN_AND_MEAN",
             "USE_WIN32_SMALL_FILES",
+            "strcasecmp=_stricmp",
         ],
         "//conditions:default": [
             "_DEFAULT_SOURCE",
