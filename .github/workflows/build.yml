@@ -28,6 +28,8 @@ jobs:
           @echo on
           choco install cmake
           cmake --version
-          curl -OL https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.6/src/hdf5-1.10.6.tar.gz
-          tar -xzf hdf5-1.10.6.tar.gz
+          curl -OL https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.6/src/CMake-hdf5-1.10.6.tar.gz
+          tar -xzf CMake-hdf5-1.10.6.tar.gz
           ls -la
+          cd CMake-hdf5-1.10.6
+          ctest -S HDF5config.cmake,BUILD_GENERATOR=VS201964 -C Release -VV
