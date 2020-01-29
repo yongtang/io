@@ -491,6 +491,21 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "sql_ops",
+    srcs = [
+        "kernels/sql_kernels.cc",
+        "ops/sql_ops.cc",
+    ],
+    copts = tf_io_copts(),
+    linkstatic = True,
+    deps = [
+        "//tensorflow_io/core:dataset_ops",
+        "@postgresql",
+    ],
+    alwayslink = 1,
+)
+
 cc_binary(
     name = "python/ops/libtensorflow_io.so",
     copts = tf_io_copts(),
@@ -504,6 +519,7 @@ cc_binary(
         "//tensorflow_io/core:kafka_ops",
         "//tensorflow_io/core:lmdb_ops",
         "//tensorflow_io/core:numpy_ops",
+        "//tensorflow_io/core:sql_ops",
         "//tensorflow_io/core:serialization_ops",
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
