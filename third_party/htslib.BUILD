@@ -30,7 +30,7 @@ genrule(
         echo '#define HAVE_STDINT_H 1'
         echo '#define HAVE_STDLIB_H 1'
         echo '#define HAVE_STRING_H 1'
-        echo '#define HAVE_STRINGS_H 1'
+        echo '//#define HAVE_STRINGS_H 1'
         echo '#define HAVE_SYS_PARAM_H 1'
         echo '#define HAVE_SYS_STAT_H 1'
         echo '#define HAVE_SYS_TYPES_H 1'
