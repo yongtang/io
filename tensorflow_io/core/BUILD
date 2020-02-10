@@ -165,12 +165,12 @@ cc_library(
         "kernels/image_hdr_kernels.cc",
         "kernels/image_openexr_kernels.cc",
         "kernels/image_pnm_kernels.cc",
+        "kernels/image_tiff_kernels.cc",
         "kernels/image_webp_kernels.cc",
     ] + select({
         "@bazel_tools//src/conditions:windows": [],
         "//conditions:default": [
             "kernels/image_dicom_kernels.cc",
-            "kernels/image_tiff_kernels.cc",
         ],
     }),
     copts = tf_io_copts(),
@@ -180,6 +180,7 @@ cc_library(
         "//third_party:font",
         "@easyexif",
         "@freetype",
+        "@libtiff",
         "@libwebp",
         "@openexr",
         "@stb",
@@ -187,7 +188,6 @@ cc_library(
         "@bazel_tools//src/conditions:windows": [],
         "//conditions:default": [
             "@dcmtk",
-            "@libtiff",
         ],
     }),
     alwayslink = 1,
