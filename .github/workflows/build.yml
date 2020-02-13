@@ -2,8 +2,6 @@ name: GitHub CI
 
 on:
   push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
@@ -208,6 +206,11 @@ jobs:
           python3 setup.py --package-version | xargs python3 -m pip install
           python3 tools/build/configure.py
           cat .bazelrc
+          echo %PATH%
+          echo %BOOST_ROOT%
+          dir %BOOST_ROOT%
+          rm -rf %BOOST_ROOT%
+          dir %BOOST_ROOT%
           bazel build -s --verbose_failures @com_github_azure_azure_storage_cpplite//:azure
           bazel build -s --verbose_failures //tensorflow_io/core:python/ops/libtensorflow_io.so
       - uses: actions/upload-artifact@v1
