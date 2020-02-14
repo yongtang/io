@@ -198,10 +198,10 @@ http_archive(
     patch_cmds = [
         "rm -f src/win32_config.h",
     ],
-    sha256 = "9c0afb8b53779d968225edf1e79da48a162895ad557900f75e7978f65e642032",
-    strip_prefix = "librdkafka-0.11.6",
+    sha256 = "8dcf91f7eec7325182a44b056c6dba7ea82554dcb2053ec9a7c08186a8989961",
+    strip_prefix = "librdkafka-1.4.0-RC1",
     urls = [
-        "https://github.com/edenhill/librdkafka/archive/v0.11.6.tar.gz",
+        "https://github.com/edenhill/librdkafka/archive/v1.4.0-RC1.tar.gz",
     ],
 )
 
