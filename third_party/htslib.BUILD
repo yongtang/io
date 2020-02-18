@@ -57,7 +57,7 @@ genrule(
     outs = ["strings.h"],
     cmd = """
         exec > "$@"
-        echo ''
+        echo '#include <windows.h>'
     """,
 )
 
@@ -66,6 +66,7 @@ genrule(
     outs = ["pthread.h"],
     cmd = """
         exec > "$@"
+        echo '#include <windows.h>'
         echo '#include "pthread-win32.h"'
     """,
 )
