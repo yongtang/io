@@ -52,14 +52,28 @@ genrule(
     cmd = """echo '#define HTS_VERSION "%s"' > "$@" """ % version,
 )
 
+genrule(
+    name = "strings",
+    outs = ["strings.h"],
+    cmd = """echo '#include "c.h"' > "$@" """,
+)
+
+genrule(
+    name = "pthread",
+    outs = ["pthread.h"],
+    cmd = """echo '#include "c.h"' > "$@" """,
+)
+
 # Vanilla htslib, no extensions.
 cc_library(
     name = "htslib",
-    srcs = [
+    srcs = glob([
+        "htslib/*.h",
+        "cram/*.h",
+    ]) + [
         "bcf_sr_sort.c",
         "bcf_sr_sort.h",
         "bgzf.c",
-        "config.h",
         "cram/cram_codecs.c",
         "cram/cram_decode.c",
         "cram/cram_encode.c",
@@ -70,32 +84,22 @@ cc_library(
         "cram/cram_stats.c",
         "cram/files.c",
         "cram/mFILE.c",
-        "cram/mFILE.h",
-        "cram/misc.h",
         "cram/open_trace_file.c",
-        "cram/open_trace_file.h",
-        "cram/os.h",
         "cram/pooled_alloc.c",
-        "cram/rANS_byte.h",
         "cram/rANS_static.c",
-        "cram/rANS_static.h",
         "cram/sam_header.c",
         "cram/string_alloc.c",
-        "cram/string_alloc.h",
         "errmod.c",
         "faidx.c",
         "hfile.c",
-        "hfile_internal.h",
         "hfile_net.c",
         "hts.c",
-        "hts_internal.h",
         "hts_os.c",
         "kfunc.c",
         "knetfile.c",
         "kstring.c",
         "md5.c",
         "multipart.c",
-        "os/lzma_stub.h",
         "plugin.c",
         "probaln.c",
         "realn.c",
@@ -104,40 +108,46 @@ cc_library(
         "synced_bcf_reader.c",
         "tbx.c",
         "textutils.c",
-        "textutils_internal.h",
         "thread_pool.c",
-        "thread_pool_internal.h",
         "vcf.c",
         "vcf_sweep.c",
         "vcfutils.c",
-        "version.h",
+    ] + [
+        "os/lzma_stub.h",
+        "hfile_internal.h",
+        "hts_internal.h",
+        "textutils_internal.h",
+        "thread_pool_internal.h",
     ],
     # Genrules in lieu of ./configure.  Minimum viable linux.
-    hdrs = glob(["htslib/*.h"]) + [
-        "cram/cram.h",
-        "cram/pooled_alloc.h",
-    ],
-    copts = [
-        "-Wno-implicit-function-declaration",  # cram_io.c
-        "-Wno-unused-variable",  # cram_encode.c
-        "-Wno-error",
-    ],
+    hdrs = [
+        "config.h",
+        "version.h",
+    ] + select({
+        "@bazel_tools//src/conditions:windows": [
+            "pthread.h",
+            "strings.h",
+        ],
+        "//conditions:default": [],
+    }),
+    copts = select({
+        "@bazel_tools//src/conditions:windows": [],
+        "//conditions:default": [
+            "-Wno-implicit-function-declaration",  # cram_io.c
+            "-Wno-unused-variable",  # cram_encode.c
+            "-Wno-error",
+        ],
+    }),
     includes = ["."],
-    textual_hdrs = [
-        "cram/cram_samtools.h",
-        "cram/sam_header.h",
-        "cram/cram_structs.h",
-        "cram/cram_io.h",
-        "cram/cram_encode.h",
-        "cram/cram_decode.h",
-        "cram/cram_stats.h",
-        "cram/cram_codecs.h",
-        "cram/cram_index.h",
-    ],
     visibility = ["//visibility:public"],
     deps = [
         "@bzip2",
         "@xz//:lzma",
         "@zlib",
-    ],
+    ] + select({
+        "@bazel_tools//src/conditions:windows": [
+            "@postgresql",
+        ],
+        "//conditions:default": [],
+    }),
 )
