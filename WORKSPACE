@@ -736,3 +736,13 @@ http_archive(
         "https://ftp.postgresql.org/pub/source/v12.1/postgresql-12.1.tar.gz",
     ],
 )
+
+http_archive(
+    name = "pthreads4w",
+    build_file = "//third_party:pthreads4w.BUILD",
+    sha256 = "b81136effb7185c77601fe2e0e6ac19bd996912e4814cebdd3010b0fac9e259b",
+    strip_prefix = "pthreads4w-code-07053a521b0a9deb6db2a649cde1f828f2eb1f4f",
+    urls = [
+        "https://downloads.sourceforge.net/project/pthreads4w/pthreads4w-code-v3.0.0.zip",
+    ],
+)

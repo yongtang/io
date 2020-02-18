@@ -62,16 +62,6 @@ genrule(
     """,
 )
 
-genrule(
-    name = "pthread",
-    outs = ["pthread.h"],
-    cmd = """
-        exec > "$@"
-        echo '#include "strings.h"'
-        echo '#include "pthread-win32.h"'
-    """,
-)
-
 # Vanilla htslib, no extensions.
 cc_library(
     name = "htslib",
@@ -157,7 +147,7 @@ cc_library(
         "@zlib",
     ] + select({
         "@bazel_tools//src/conditions:windows": [
-            "@postgresql",
+            "pthreads4w",
         ],
         "//conditions:default": [],
     }),
