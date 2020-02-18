@@ -61,7 +61,11 @@ genrule(
 genrule(
     name = "pthread",
     outs = ["pthread.h"],
-    cmd = """echo '#include "c.h"' > "$@" """,
+    cmd = """
+        exec > "$@"
+        echo '#include "c.h"'
+        echo '#include "pthread-win32.h"'
+    """,
 )
 
 # Vanilla htslib, no extensions.
