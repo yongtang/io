@@ -146,7 +146,7 @@ cc_library(
         "@zlib",
     ] + select({
         "@bazel_tools//src/conditions:windows": [
-            "pthreads4w",
+            "@pthreads4w",
         ],
         "//conditions:default": [],
     }),
