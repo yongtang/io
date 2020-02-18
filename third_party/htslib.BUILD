@@ -148,6 +148,9 @@ cc_library(
     }),
     includes = ["."],
     visibility = ["//visibility:public"],
+    defines = [
+        "WIN32_LEAN_AND_MEAN",
+    ],
     deps = [
         "@bzip2",
         "@xz//:lzma",
