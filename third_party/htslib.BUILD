@@ -124,7 +124,6 @@ cc_library(
     ] + select({
         "@bazel_tools//src/conditions:windows": [
             "strings.h",
-            "unistd.h",
         ],
         "//conditions:default": [],
     }),
