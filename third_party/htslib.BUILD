@@ -58,6 +58,7 @@ genrule(
     cmd = """
         exec > "$@"
         echo '#include <windows.h>'
+        echo 'typedef __int64 ssize_t;'
     """,
 )
 
@@ -66,7 +67,7 @@ genrule(
     outs = ["pthread.h"],
     cmd = """
         exec > "$@"
-        echo '#include <windows.h>'
+        echo '#include "strings.h"'
         echo '#include "pthread-win32.h"'
     """,
 )
