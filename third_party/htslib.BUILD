@@ -99,7 +99,7 @@ cc_library(
         "hfile_net.c",
         "hts.c",
         "hts_os.c",
-        "kfunc.c",
+        #"kfunc.c",
         "knetfile.c",
         "kstring.c",
         "md5.c",
