@@ -58,6 +58,7 @@ genrule(
     cmd = """
         exec > "$@"
         echo '#include <windows.h>'
+        echo '#include <io.h>'
         echo 'typedef __int64 ssize_t;'
         echo '#define F_OK 0'
         echo '#define W_OK 2'
