@@ -59,6 +59,9 @@ genrule(
         exec > "$@"
         echo '#include <windows.h>'
         echo 'typedef __int64 ssize_t;'
+        echo '#define F_OK 0'
+        echo '#define W_OK 2'
+        echo '#define R_OK 4'
     """,
 )
 
