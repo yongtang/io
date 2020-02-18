@@ -141,9 +141,13 @@ cc_library(
     }),
     includes = ["."],
     visibility = ["//visibility:public"],
-    defines = [
-        "WIN32_LEAN_AND_MEAN",
-    ],
+    defines = select({
+        "@bazel_tools//src/conditions:windows": [
+            "WIN32_LEAN_AND_MEAN",
+            "_USE_MATH_DEFINES",
+        ],
+        "//conditions:default": [],
+    }),
     deps = [
         "@bzip2",
         "@xz//:lzma",
