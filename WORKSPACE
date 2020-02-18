@@ -659,6 +659,7 @@ http_archive(
         "sed -i.bak 's/#include <stdint/#include <strings.h>\\'$'\\n''#include <stdint/' htslib/bgzf.h",
         "sed -i.bak 's/#include <string/#include <strings.h>\\'$'\\n''#include <string/' htslib/hfile.h",
         "sed -i.bak 's/#include <stdint/#include <strings.h>\\'$'\\n''#include <stdint/' htslib/knetfile.h",
+        "sed -i.bak 's/#include <string/#include <strings.h>\\'$'\\n''#include <string/' knetfile.c",
     ],
 )
 
