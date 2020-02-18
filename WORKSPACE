@@ -656,7 +656,8 @@ http_archive(
         "https://github.com/samtools/htslib/archive/1.9.zip",
     ],
     patch_cmds = [
-        "sed -i.bak 's/include <string/include <strings/' htslib/hfile.h",
+        "sed -i.bak 's/#include <string/#include <strings.h>\\'$'\\n''#include <string/' htslib/hfile.h",
+        "sed -i.bak 's/#include <stdint/#include <strings.h>\\'$'\\n''#include <stdint/' htslib/bgzf.h",
     ],
 )
 
