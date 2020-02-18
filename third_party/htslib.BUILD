@@ -26,7 +26,6 @@ genrule(
         echo '#define HAVE_LIBLZMA 1'
         echo '#define HAVE_LIBZ 1'
         echo '#define HAVE_MEMORY_H 1'
-        echo '#define HAVE_MMAP 1'
         echo '#define HAVE_STDINT_H 1'
         echo '#define HAVE_STDLIB_H 1'
         echo '#define HAVE_STRING_H 1'
