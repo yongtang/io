@@ -101,7 +101,7 @@ cc_library(
         "kstring.c",
         "md5.c",
         "multipart.c",
-        "plugin.c",
+        #"plugin.c",
         "probaln.c",
         "realn.c",
         "regidx.c",
