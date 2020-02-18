@@ -124,6 +124,7 @@ cc_library(
     ] + select({
         "@bazel_tools//src/conditions:windows": [
             "strings.h",
+            "unistd.h",
         ],
         "//conditions:default": [],
     }),
@@ -147,6 +148,7 @@ cc_library(
     ] + select({
         "@bazel_tools//src/conditions:windows": [
             "@pthreads4w",
+            "@postgresql",
         ],
         "//conditions:default": [],
     }),
