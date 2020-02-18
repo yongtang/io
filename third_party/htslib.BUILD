@@ -123,7 +123,6 @@ cc_library(
         "version.h",
     ] + select({
         "@bazel_tools//src/conditions:windows": [
-            "pthread.h",
             "strings.h",
         ],
         "//conditions:default": [],
