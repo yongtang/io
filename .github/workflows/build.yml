@@ -21,9 +21,9 @@ jobs:
           set -x -e
           export PATH=/usr/bin:$PATH
           echo $PATH
-          /usr/bin/python3 --version
+          sudo sed -i.bak 's/sys.modules.values()/list(sys.modules.values())/g' /Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.7/lib/python3.7/linecache.py
           python3 --version
-          sudo /usr/bin/python3 -m pip install tensorflow
-          /usr/bin/python3 -c 'import site; print(site.getsitepackages())'
-          /usr/bin/python3 -c 'import tensorflow as tf; print(tf.version.VERSION)'
+          sudo python3 -m pip install tensorflow
+          python3 -c 'import site; print(site.getsitepackages())'
+          python3 -c 'import tensorflow as tf; print(tf.version.VERSION)'
 
