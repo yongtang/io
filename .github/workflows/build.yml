@@ -22,3 +22,7 @@ jobs:
           echo $PATH
           /usr/bin/python3 --version
           python3 --version
+          /usr/bin/python3 -m pip install tensorflow
+          /usr/bin/python3 -c 'import site; print(site.getsitepackages())'
+          /usr/bin/python3 -c 'import tensorflow as tf; print(tf.version.VERSION)'
+
