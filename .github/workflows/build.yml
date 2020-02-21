@@ -19,5 +19,6 @@ jobs:
       - name: Bazel on macOS
         run: |
           set -x -e
+          echo $PATH
           /usr/bin/python3 --version
           python3 --version
