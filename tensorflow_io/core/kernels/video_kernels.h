@@ -53,7 +53,8 @@ class VideoCaptureContext {
         }) {}
   ~VideoCaptureContext() {}
 
-  Status Init(const string& device) {
+  Status Init(const string& device, int64_t* bytes, int64_t* width,
+              int64_t* height) {
     device_ = device;
 
     const char* devname = device.c_str();
@@ -88,47 +89,83 @@ class VideoCaptureContext {
       return errors::InvalidArgument(devname, " is no video capture device");
     }
 
-
-                if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-                        return errors::InvalidArgument(devname, " does not support streaming i/o");
-                }
-		std::cerr << "XXXXX START XXXXX" << std::endl;
-	if (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) {
-		struct v4l2_fmtdesc     fmtdesc;
-		struct v4l2_format      format;
-		int tab = 1;
-		printf("video capture\n");
-		for (int i = 0;; i++) {
-			memset(&fmtdesc,0,sizeof(fmtdesc));
-			fmtdesc.index = i;
-			fmtdesc.type  = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-			if (-1 == ioctl(fd_,VIDIOC_ENUM_FMT,&fmtdesc)) {
-		printf("video capture2\n");
-				break;
-			}
-			printf("    VIDIOC_ENUM_FMT(%d,VIDEO_CAPTURE)\n",i);
-			//print_struct(stdout,desc_v4l2_fmtdesc,&fmtdesc,"",tab);
-		}
-		memset(&format,0,sizeof(format));
-		format.type  = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-		if (-1 == ioctl(fd_,VIDIOC_G_FMT,&format)) {
-		printf("video capture3\n");
-			perror("VIDIOC_G_FMT(VIDEO_CAPTURE)");
-		} else {
-			printf("    VIDIOC_G_FMT(VIDEO_CAPTURE)\n");
-			//print_struct(stdout,desc_v4l2_format,&format,"",tab);
-		}
-		printf("\n");
-	}
+    if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
+      return errors::InvalidArgument(devname, " does not support read i/o");
+    }
 
     struct v4l2_format fmt;
     memset(&(fmt), 0, sizeof(fmt));
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-   if (-1 == xioctl(fd_, VIDIOC_G_FMT, &fmt)) {
-        return errors::InvalidArgument("cannot VIDIOC_G_FMT '", devname,
-                                       "': ", errno, ", ", strerror(errno));
+    if (-1 == xioctl(fd_, VIDIOC_G_FMT, &fmt)) {
+      return errors::InvalidArgument("cannot VIDIOC_G_FMT '", devname,
+                                     "': ", errno, ", ", strerror(errno));
+    }
+
+    /* Buggy driver paranoia. */
+    {
+      unsigned int min;
+      min = fmt.fmt.pix.width * 2;
+      if (fmt.fmt.pix.bytesperline < min) {
+        fmt.fmt.pix.bytesperline = min;
+      }
+      min = fmt.fmt.pix.bytesperline * fmt.fmt.pix.height;
+      if (fmt.fmt.pix.sizeimage < min) {
+        fmt.fmt.pix.sizeimage = min;
+      }
+    }
+
+    if (fmt.fmt.pix.pixelformat != V4L2_PIX_FMT_YUYV) {
+      return errors::InvalidArgument(
+          "only V4L2_PIX_FMT_YUYV is supported, received ",
+          fmt.fmt.pix.pixelformat);
+    }
+
+    *bytes = fmt.fmt.pix.sizeimage;
+    *width = fmt.fmt.pix.width;
+    *height = fmt.fmt.pix.height;
+
+    return Status::OK();
+  }
+  Status Read(void* data, size_t size) {
+    do {
+      fd_set fds;
+      struct timeval tv;
+      int r;
+
+      FD_ZERO(&fds);
+      FD_SET(fd_, &fds);
+
+      /* Timeout. */
+      tv.tv_sec = 2;
+      tv.tv_usec = 0;
+      r = select(fd_ + 1, &fds, NULL, NULL, &tv);
+
+      if (-1 == r) {
+        if (EINTR == errno) {
+          continue;
         }
-    std::cerr << "SUCCESS: " << fd_ << std::endl;
+        return errors::InvalidArgument("cannot select: ", errno, ", ",
+                                       strerror(errno));
+      }
+      if (0 == r) {
+        return errors::InvalidArgument("select timeout");
+      }
+
+      if (-1 == read(fd_, data, size)) {
+        if (EAGAIN == errno) {
+          /* EAGAIN - continue select loop. */
+          continue;
+        }
+        if (EIO == errno) {
+          /* Could ignore EIO, see spec. */
+          /* fall through */
+        }
+        return errors::InvalidArgument("cannot read: ", errno, ", ",
+                                       strerror(errno));
+      }
+      // Data Obtained, break
+      break;
+    } while (true);
     return Status::OK();
   }
 

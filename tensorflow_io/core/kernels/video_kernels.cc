@@ -28,23 +28,12 @@ void* VideoCaptureInitFunction(int64_t* bytes, int64_t* width,
 void VideoCaptureNextFunction(void* context, void* data, int64_t size) {}
 void VideoCaptureFiniFunction(void* context) {}
 #else
-//#include <fcntl.h>              /* low-level i/o */
-//#include <unistd.h>
-//#include <errno.h>
-//#include <sys/stat.h>
-//#include <sys/types.h>
-//#include <sys/time.h>
-//#include <sys/mman.h>
-//#include <sys/ioctl.h>
-
-#include <linux/videodev2.h>
-
 void* VideoCaptureInitFunction(int64_t* bytes, int64_t* width,
                                int64_t* height) {
   tensorflow::data::VideoCaptureContext* p =
       new tensorflow::data::VideoCaptureContext();
   if (p != nullptr) {
-    tensorflow::Status status = p->Init("/dev/video0");
+    tensorflow::Status status = p->Init("/dev/video0", bytes, width, height);
     if (status.ok()) {
       return p;
     }
@@ -53,7 +42,16 @@ void* VideoCaptureInitFunction(int64_t* bytes, int64_t* width,
   }
   return NULL;
 }
-void VideoCaptureNextFunction(void* context, void* data, int64_t size) {}
+void VideoCaptureNextFunction(void* context, void* data, int64_t size) {
+  tensorflow::data::VideoCaptureContext* p =
+      static_cast<tensorflow::data::VideoCaptureContext*>(context);
+  if (p != nullptr) {
+    tensorflow::Status status = p->Read(data, size);
+    if (!status.ok()) {
+      LOG(ERROR) << "unable to read video capture: " << status;
+    }
+  }
+}
 void VideoCaptureFiniFunction(void* context) {
   tensorflow::data::VideoCaptureContext* p =
       static_cast<tensorflow::data::VideoCaptureContext*>(context);
