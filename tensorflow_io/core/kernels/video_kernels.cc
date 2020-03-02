@@ -13,21 +13,54 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/core/framework/resource_mgr.h"
-#include "tensorflow/core/framework/resource_op_kernel.h"
+#include "tensorflow_io/core/kernels/video_kernels.h"
 
 extern "C" {
 #if defined(__APPLE__)
 void* VideoCaptureInitFunction(int64_t* bytes, int64_t* width, int64_t* height);
 void VideoCaptureNextFunction(void* context, void* data, int64_t size);
 void VideoCaptureFiniFunction(void* context);
-#else
+#elif defined(_MSV_VER)
 void* VideoCaptureInitFunction(int64_t* bytes, int64_t* width,
                                int64_t* height) {
   return NULL;
 }
 void VideoCaptureNextFunction(void* context, void* data, int64_t size) {}
 void VideoCaptureFiniFunction(void* context) {}
+#else
+//#include <fcntl.h>              /* low-level i/o */
+//#include <unistd.h>
+//#include <errno.h>
+//#include <sys/stat.h>
+//#include <sys/types.h>
+//#include <sys/time.h>
+//#include <sys/mman.h>
+//#include <sys/ioctl.h>
+
+#include <linux/videodev2.h>
+
+void* VideoCaptureInitFunction(int64_t* bytes, int64_t* width,
+                               int64_t* height) {
+  tensorflow::data::VideoCaptureContext* p =
+      new tensorflow::data::VideoCaptureContext();
+  if (p != nullptr) {
+    tensorflow::Status status = p->Init("/dev/video0");
+    if (status.ok()) {
+      return p;
+    }
+    LOG(ERROR) << "unable to initialize video capture: " << status;
+    delete p;
+  }
+  return NULL;
+}
+void VideoCaptureNextFunction(void* context, void* data, int64_t size) {}
+void VideoCaptureFiniFunction(void* context) {
+  tensorflow::data::VideoCaptureContext* p =
+      static_cast<tensorflow::data::VideoCaptureContext*>(context);
+  if (p != nullptr) {
+    delete p;
+  }
+}
 #endif
 }
 namespace tensorflow {
