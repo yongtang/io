@@ -268,6 +268,15 @@ http_archive(
 )
 
 http_archive(
+    name = "genicam",
+    build_file = "//third_party:genicam.BUILD",
+    sha256 = "48c0867219c4d04a968a27e740d81068fae08b6ab94c9834b221530d941bb4d1",
+    urls = [
+        "https://www.emva.org/wp-content/uploads/GenTL_v1_6.zip",
+    ],
+)
+
+http_archive(
     name = "aws-checksums",
     build_file = "//third_party:aws-checksums.BUILD",
     sha256 = "6e6bed6f75cf54006b6bafb01b3b96df19605572131a2260fddaf0e87949ced0",

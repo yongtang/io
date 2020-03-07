@@ -231,6 +231,7 @@ cc_library(
     linkstatic = True,
     deps = [
         "//tensorflow_io/core:dataset_ops",
+        "@genicam",
     ] + select({
         "@bazel_tools//src/conditions:darwin": [
             "//tools/build/swift:video_swift",

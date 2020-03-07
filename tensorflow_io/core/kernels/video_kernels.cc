@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tensorflow_io/core/kernels/video_kernels.h"
-
+#include "GenTL.h"
 extern "C" {
 #if defined(__APPLE__)
 void* VideoCaptureInitFunction(const char* device, int64_t* bytes,
@@ -79,6 +79,22 @@ class VideoCaptureReadableResource : public ResourceBase {
   Status Init(const string& input) {
     mutex_lock l(mu_);
 
+GenTL::GC_ERROR err = GenTL::GCInitLib();
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+if (err == GenTL::GC_ERR_SUCCESS) {
+  err = GenTL::GCCloseLib();
+}
+
+//TLOpen( hTL );
+//TLUpdateInterfaceList( hTL );
+//TLGetNumInterfaces( hTL, NumInterfaces );
+//for (i = 0; i < NumInterfaces; i++) {
+//TLGetInterfaceID( hTL, 0, IfaceID, &bufferSize );
+// TLOpenInterface( hTL, IfaceID, hNewIface );
+//
+//}
+
+    return errors::Unimplemented("Init");
     int64_t bytes, width, height;
     context_.reset(
         VideoCaptureInitFunction(input.c_str(), &bytes, &width, &height));
@@ -94,6 +110,7 @@ class VideoCaptureReadableResource : public ResourceBase {
       std::function<Status(const TensorShape& shape, Tensor** value_tensor)>
           allocate_func) {
     mutex_lock l(mu_);
+    return errors::Unimplemented("Read");
 
     Tensor* value_tensor;
     TF_RETURN_IF_ERROR(allocate_func(TensorShape({1}), &value_tensor));
