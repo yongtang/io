@@ -831,6 +831,12 @@ def fixture_video_capture():
 
   args = "/dev/video0"
   def func(q):
+    from genicam.gentl import GenTLProducer
+    file_path = "/usr/local/lib/python3.6/dist-packages/genicam/TLSimu.cti"
+    #producer = GenTLProducer.create_producer()
+    #producer.open(file_path)
+    #system = producer.create_system()
+    #system.open()
     dataset = tfio.experimental.IODataset.stream().from_video_capture(
         q)
     dataset = dataset.map(tf.strings.length)

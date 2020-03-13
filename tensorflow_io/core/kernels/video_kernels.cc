@@ -16,6 +16,7 @@ limitations under the License.
 #include "tensorflow_io/core/kernels/video_kernels.h"
 #include "GenTL.h"
 extern "C" {
+	#include <dlfcn.h>
 #if defined(__APPLE__)
 void* VideoCaptureInitFunction(const char* device, int64_t* bytes,
                                int64_t* width, int64_t* height);
@@ -79,12 +80,101 @@ class VideoCaptureReadableResource : public ResourceBase {
   Status Init(const string& input) {
     mutex_lock l(mu_);
 
+    //void *lib = dlopen("/usr/local/lib/python3.6/dist-packages/genicam/TLSimu.cti", RTLD_NOW);
+    void *lib = dlopen("/opt/mvIMPACT_Acquire/lib/x86_64/libmvGenTLProducer.so.2.29.0", RTLD_NOW);
+    if (lib == nullptr) {
+    std::cerr << "XXXXX HANDLE XXXXX: " << dlerror() << std::endl;
+    }
+    GenTL::PGCInitLib GCInitLib = (GenTL::PGCInitLib)dlsym(lib, "GCInitLib");
+    if (GCInitLib == nullptr) {
+    std::cerr << "XXXXX SYM GCInitLib XXXXX: " << dlerror() << std::endl;
+    }
+    GenTL::PTLOpen TLOpen = (GenTL::PTLOpen)dlsym(lib, "TLOpen");
+    if (TLOpen == nullptr) {
+    std::cerr << "XXXXX SYM TLOpen XXXXX: " << dlerror() << std::endl;
+    }
+    GenTL::PTLUpdateInterfaceList TLUpdateInterfaceList = (GenTL::PTLUpdateInterfaceList)dlsym(lib, "TLUpdateInterfaceList");
+    if (TLUpdateInterfaceList == nullptr) {
+    std::cerr << "XXXXX SYM TLUpdateInterfaceList XXXXX: " << dlerror() << std::endl;
+    }
+    GenTL::PTLGetNumInterfaces TLGetNumInterfaces = (GenTL::PTLGetNumInterfaces)dlsym(lib, "TLGetNumInterfaces");
+    if (TLGetNumInterfaces == nullptr) {
+    std::cerr << "XXXXX SYM TLGetNumInterfaces XXXXX: " << dlerror() << std::endl;
+    }
+    GenTL::PTLGetInterfaceID TLGetInterfaceID = (GenTL::PTLGetInterfaceID)dlsym(lib, "TLGetInterfaceID");
+    if (TLGetInterfaceID == nullptr) {
+    std::cerr << "XXXXX SYM TLGetInterfaceID XXXXX: " << dlerror() << std::endl;
+    }
+    GenTL::PTLOpenInterface TLOpenInterface = (GenTL::PTLOpenInterface)dlsym(lib, "TLOpenInterface");
+    if (TLOpenInterface == nullptr) {
+    std::cerr << "XXXXX SYM TLOpenInterface XXXXX: " << dlerror() << std::endl;
+    }
+    GenTL::PIFUpdateDeviceList IFUpdateDeviceList = (GenTL::PIFUpdateDeviceList)dlsym(lib, "IFUpdateDeviceList");
+    if (IFUpdateDeviceList == nullptr) {
+    std::cerr << "XXXXX SYM IFUpdateDeviceList XXXXX: " << dlerror() << std::endl;
+    }
+    GenTL::PIFGetNumDevices IFGetNumDevices = (GenTL::PIFGetNumDevices)dlsym(lib, "IFGetNumDevices(");
+    if (IFGetNumDevices == nullptr) {
+    std::cerr << "XXXXX SYM TLOpen XXXXX: " << dlerror() << std::endl;
+    }
+    //GenTL::PTLOpen TLOpen = (GenTL::PTLOpen)dlsym(lib, "TLOpen");
+    //if (TLOpen == nullptr) {
+    //std::cerr << "XXXXX SYM TLOpen XXXXX: " << dlerror() << std::endl;
+    //}
+std::cerr << "GenTL::GC_ERROR: " << 0 << std::endl;
+
+GenTL::GC_ERROR err = GCInitLib();
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+
+GenTL::TL_HANDLE hTL;
+err = TLOpen(&hTL);
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+
+bool8_t bChanged;
+uint64_t iTimeout = 5000;
+err = TLUpdateInterfaceList( hTL, &bChanged, iTimeout );
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+
+uint32_t NumIfaces;
+err = TLGetNumInterfaces( hTL, &NumIfaces );
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+
+std::cerr << "XXXXX NumIfaces XXXXX: " << NumIfaces << std::endl;
+
+string IfaceID;
+for (int i = 0; i < NumIfaces; i++) {
+size_t iSize;
+err = TLGetInterfaceID( hTL, 0, NULL, &iSize );
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+
+std::cerr << "XXXXX iSize XXXXX: " << iSize << std::endl;
+IfaceID.resize(iSize + 1);
+
+err = TLGetInterfaceID( hTL, 0, &IfaceID[0], &iSize );
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+std::cerr << "XXXXX IfaceID XXXXX: " << IfaceID << std::endl;
+}
+
+GenTL::IF_HANDLE hIface;
+err = TLOpenInterface( hTL, &IfaceID[0], &hIface );
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+
+err = IFUpdateDeviceList(hIface, &bChanged, iTimeout);
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+std::cerr << "XXXXXXX" << bChanged << std::endl;
+uint32 NumDevices;
+err = IFGetNumDevices( hIface, &NumDevices );
+std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
+std::cerr << "XXXXX NumDevices XXXXX: " << NumDevices << std::endl;
+
+
+/*
 GenTL::GC_ERROR err = GenTL::GCInitLib();
 std::cerr << "GenTL::GC_ERROR: " << err << std::endl;
 if (err == GenTL::GC_ERR_SUCCESS) {
   err = GenTL::GCCloseLib();
 }
-
+*/
 //TLOpen( hTL );
 //TLUpdateInterfaceList( hTL );
 //TLGetNumInterfaces( hTL, NumInterfaces );
