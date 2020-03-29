@@ -545,6 +545,11 @@ def fixture_decode_aac():
         "gs-16b-2c-44100hz.mp4",
     )
     content = tf.io.read_file(path)
+    v = tfio.experimental.audio.decode_aac(
+        tf.io.read_file(path)
+    )
+    v = tf.cast(v * (1 << 15), tf.int16)
+    tf.io.write_file("gs-16b-2c-44100hz.ffmpeg.wav", tfio.experimental.audio.encode_wav(v, 44100))
 
     # The test file gs-16b-2c-44100hz.wav is generated from the
     # method itself on macOS so it is not exactly a good test.
