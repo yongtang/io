@@ -64,8 +64,8 @@ func DecodeAACFunctionCall(state: UnsafeMutableRawPointer, codec: Int64, rate: I
         return -4
     }
     
-    converter.primeMethod = AVAudioConverterPrimeMethod.pre
-    converter.primeInfo = AVAudioConverterPrimeInfo.init(leadingFrames: 2048, trailingFrames: 0)
+    converter.primeMethod = AVAudioConverterPrimeMethod.none
+    converter.primeInfo = AVAudioConverterPrimeInfo.init(leadingFrames: 0, trailingFrames: 0)
     
     var haveData = true
     let input_block : AVAudioConverterInputBlock = { packetCount, inputStatus in

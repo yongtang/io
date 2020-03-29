@@ -395,7 +395,7 @@ class MP4AACReadableResource : public AudioReadableResourceBase {
 
   // decoder delay for preroll, and padding at the end?
   const int64 preroll_ = 1;
-  const int64 padding_ = 2;
+  const int64 padding_ = 1;
 };
 
 class AudioDecodeAACOp : public OpKernel {
