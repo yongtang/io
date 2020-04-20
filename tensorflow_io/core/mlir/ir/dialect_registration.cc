@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/compiler/mlir/tfjs/ir/tfjs_ops.h"
+#include "tensorflow_io/core/mlir/ir/tfjs_ops.h"
 
 // Static initialization for TensorFlow.js op registration.
 static mlir::DialectRegistration<mlir::tfjs::TFJSDialect> tfjs_ops;

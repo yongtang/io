@@ -34,7 +34,7 @@ gentbl(
         "@llvm-project//mlir:include/mlir/Interfaces/SideEffects.td",
     ],
 )
-"""
+
 cc_library(
     name = "tensorflow_js",
     srcs = [
@@ -69,4 +69,3 @@ cc_library(
     ],
     alwayslink = 1,
 )
-"""

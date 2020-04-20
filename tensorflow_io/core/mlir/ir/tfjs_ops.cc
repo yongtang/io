@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/compiler/mlir/tfjs/ir/tfjs_ops.h"
+#include "tensorflow_io/core/mlir/ir/tfjs_ops.h"
 
 namespace mlir {
 namespace tfjs {
 
 #define GET_OP_CLASSES
-#include "tensorflow/compiler/mlir/tfjs/ir/tfjs_ops.cc.inc"
+#include "tensorflow_io/core/mlir/ir/tfjs_ops.cc.inc"
 
 //===----------------------------------------------------------------------===//
 // TFJSDialect
@@ -29,7 +29,7 @@ TFJSDialect::TFJSDialect(MLIRContext *context)
     : Dialect(getDialectNamespace(), context) {
   addOperations<
 #define GET_OP_LIST
-#include "tensorflow/compiler/mlir/tfjs/ir/tfjs_ops.cc.inc"
+#include "tensorflow_io/core/mlir/ir/tfjs_ops.cc.inc"
       >();
 }
 }  // namespace tfjs
