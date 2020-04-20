@@ -31,10 +31,10 @@ limitations under the License.
 namespace mlir {
 namespace tfjs {
 
-#include "tensorflow/compiler/mlir/tfjs/ir/tfjs_dialect.h.inc"
+#include "tensorflow_io/core/mlir/ir/tfjs_dialect.h.inc"
 
 #define GET_OP_CLASSES
-#include "tensorflow/compiler/mlir/tfjs/ir/tfjs_ops.h.inc"
+#include "tensorflow_io/core/mlir/ir/tfjs_ops.h.inc"
 
 }  // namespace tfjs
 }  // namespace mlir
