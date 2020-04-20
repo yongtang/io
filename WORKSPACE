@@ -913,3 +913,22 @@ http_archive(
         "https://ftp.postgresql.org/pub/source/v12.1/postgresql-12.1.tar.gz",
     ],
 )
+
+load("//tools/build/mlir:repo.bzl", "tf_http_archive")
+# Check out LLVM and MLIR from llvm-project.
+LLVM_COMMIT = "b6d77e792c3339425a733756b970dbac0da119fb"
+LLVM_SHA256 = "9d299e918ee5850afd834ed62f93101b4777f6e0d72c37e672f5a8b3558f8dd4"
+LLVM_URLS = [
+    "https://storage.googleapis.com/mirror.tensorflow.org/github.com/llvm/llvm-project/archive/{commit}.tar.gz".format(commit = LLVM_COMMIT),
+    "https://github.com/llvm/llvm-project/archive/{commit}.tar.gz".format(commit = LLVM_COMMIT),
+]
+tf_http_archive(
+    name = "llvm-project",
+    sha256 = LLVM_SHA256,
+    strip_prefix = "llvm-project-" + LLVM_COMMIT,
+    urls = LLVM_URLS,
+    additional_build_files = {
+        "//tools/build/mlir:llvm.BUILD": "llvm/BUILD",
+        "//tools/build/mlir:mlir.BUILD": "mlir/BUILD",
+    },
+)
