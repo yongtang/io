@@ -142,7 +142,7 @@ def expand_cmake_vars(name, src, dst, cmake_vars):
         srcs = [src],
         tools = [expand_cmake_vars_tool],
         outs = [dst],
-        cmd = ("$(location {}) ".format(expand_cmake_vars_tool) + cmake_vars +
+        cmd = ("python3 $(location {}) ".format(expand_cmake_vars_tool) + cmake_vars +
                "< $< > $@"),
     )
 
