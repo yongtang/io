@@ -15,5 +15,5 @@ limitations under the License.
 
 #include "tensorflow_io/core/mlir/ir/tfio_ops.h"
 
-// Static initialization for TensorFlow.js op registration.
-static mlir::DialectRegistration<mlir::tfjs::TFJSDialect> tfjs_ops;
+// Static initialization for TensorFlow I/O op registration.
+static mlir::DialectRegistration<mlir::tfio::TFIODialect> tfio_ops;
