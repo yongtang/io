@@ -926,6 +926,7 @@ http_archive(
         """echo 'config_setting(name = "windows", values = {"cpu": "x64_windows"}, visibility = ["//visibility:public"])' >> tensorflow/BUILD""",
         """echo 'config_setting(name = "freebsd", values = {"cpu": "freebsd"}, visibility = ["//visibility:public"])' >> tensorflow/BUILD""",
         """echo 'config_setting(name = "linux_ppc64le", values = {"cpu": "ppc"}, visibility = ["//visibility:public"])' >> tensorflow/BUILD""",
+        """sed -i.bak 's/cmd = ("/cmd = ("python3 /g' third_party/llvm/llvm.bzl""",
     ],
     sha256 = "73e31f1e5b2cea389b46bbade784f8f6743d6e597a3b45a278c616fff63741f8",
     strip_prefix = "tensorflow-e71f97fd6b9ae45d6703f3f762aa6646a2ec7a0a",
