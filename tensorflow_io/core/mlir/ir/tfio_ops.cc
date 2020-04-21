@@ -16,21 +16,21 @@ limitations under the License.
 #include "tensorflow_io/core/mlir/ir/tfio_ops.h"
 
 namespace mlir {
-namespace tfjs {
+namespace tfio {
 
 #define GET_OP_CLASSES
 #include "tensorflow_io/core/mlir/ir/tfio_ops.cc.inc"
 
 //===----------------------------------------------------------------------===//
-// TFJSDialect
+// TFIODialect
 //===----------------------------------------------------------------------===//
 
-TFJSDialect::TFJSDialect(MLIRContext *context)
+TFIODialect::TFIODialect(MLIRContext *context)
     : Dialect(getDialectNamespace(), context) {
   addOperations<
 #define GET_OP_LIST
 #include "tensorflow_io/core/mlir/ir/tfio_ops.cc.inc"
       >();
 }
-}  // namespace tfjs
+}  // namespace tfio
 }  // namespace mlir

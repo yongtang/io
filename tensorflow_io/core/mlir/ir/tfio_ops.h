@@ -15,12 +15,12 @@ limitations under the License.
 
 //===----------------------------------------------------------------------===//
 //
-// This file defines the dialect for TensorFlow.js
+// This file defines the dialect for TensorFlow I/O
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef TENSORFLOW_COMPILER_MLIR_TFJS_IR_TFJS_OPS_H_
-#define TENSORFLOW_COMPILER_MLIR_TFJS_IR_TFJS_OPS_H_
+#ifndef TENSORFLOW_IO_CORE_MLIR_IR_TFIO_OPS_H_
+#define TENSORFLOW_IO_CORE_MLIR_IR_TFIO_OPS_H_
 
 #include "mlir/Dialect/Traits.h"  // from @llvm-project
 #include "mlir/IR/Dialect.h"  // from @llvm-project
@@ -29,14 +29,14 @@ limitations under the License.
 #include "mlir/Interfaces/SideEffects.h"  // from @llvm-project
 #include "mlir/Support/LLVM.h"  // from @llvm-project
 namespace mlir {
-namespace tfjs {
+namespace tfio {
 
 #include "tensorflow_io/core/mlir/ir/tfio_dialect.h.inc"
 
 #define GET_OP_CLASSES
 #include "tensorflow_io/core/mlir/ir/tfio_ops.h.inc"
 
-}  // namespace tfjs
+}  // namespace tfio
 }  // namespace mlir
 
-#endif  // TENSORFLOW_COMPILER_MLIR_TFJS_IR_TFJS_OPS_H_
+#endif  // TENSORFLOW_IO_CORE_MLIR_IR_TFIO_OPS_H_
