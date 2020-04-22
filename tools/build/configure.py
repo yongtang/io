@@ -15,11 +15,32 @@
 """Config Utility to write .bazelrc based on tensorflow."""
 import re
 import sys
+import json
+import base64
+import urllib.request
 import tensorflow as tf
 
 
 def write_config():
     """Retrive compile and link information from tensorflow and write to .bazelrc."""
+
+    # Get last part of v2.1.0-rc2-17-ge5bf8de, and removes first char 'g'
+    entry = tf.version.GIT_VERSION.split('-')[-1][1:]
+    response = urllib.request.urlopen("https://api.github.com/repos/tensorflow/tensorflow/commits/{}".format(entry))
+    data = json.loads(response.read().decode('utf-8'))
+
+    # url = https://api.github.com/repos/tensorflow/tensorflow/git/commits/{commit}
+    tensorflow_commit = data["commit"]["url"].split('/commits/')[-1]
+
+    # Get contents of workspace.bzl
+    response = urllib.request.urlopen("https://api.github.com/repos/tensorflow/tensorflow/contents/tensorflow/workspace.bzl?ref={}".format(tensorflow_commit))
+    data = json.loads(response.read().decode('utf-8'))
+    lines = base64.b64decode(data["content"]).decode('utf-8').split('\n')
+    lines = [line.strip() for line in lines]
+    # Get LLVM_COMMIT = "{commit}"
+    llvm_commit = [line for line in lines if line.startswith('LLVM_COMMIT = "')][0][15:-1]
+    # Get LLVM_SHA256 = "{sha256}"
+    llvm_sha256 = [line for line in lines if line.startswith('LLVM_SHA256 = "')][0][15:-1]
 
     cflags = tf.sysconfig.get_compile_flags()
     inc_regex = re.compile("^-I")
@@ -99,6 +120,15 @@ def write_config():
                     library_name = "lib" + library_name + ".so"
             bazel_rc.write(
                 'build --action_env TF_SHARED_LIBRARY_NAME="{}"\n'.format(library_name)
+            )
+            bazel_rc.write(
+                'build --action_env TENSORFLOW_COMMIT="{}"\n'.format(tensorflow_commit)
+            )
+            bazel_rc.write(
+                'build --action_env LLVM_COMMIT="{}"\n'.format(llvm_commit)
+            )
+            bazel_rc.write(
+                'build --action_env LLVM_SHA256="{}"\n'.format(llvm_sha256)
             )
             # Needed for LLVM build
             bazel_rc.write('build --host_cxxopt="-std=c++14"\n')
