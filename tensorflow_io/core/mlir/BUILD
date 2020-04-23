@@ -74,6 +74,7 @@ cc_library(
     ],
     deps = [
         ":tensorflow_io",
+         "@org_tensorflow//tensorflow/compiler/mlir/tensorflow:convert_graphdef",
     ],
     alwayslink = 1,
 )
