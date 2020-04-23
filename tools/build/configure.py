@@ -15,7 +15,6 @@
 """Config Utility to write .bazelrc based on tensorflow."""
 import re
 import sys
-import json
 import urllib.request
 import tensorflow as tf
 
@@ -24,16 +23,8 @@ def write_config():
     """Retrive compile and link information from tensorflow and write to .bazelrc."""
 
     # Get last part of v2.1.0-rc2-17-ge5bf8de, and removes first char 'g'
-    entry = tf.version.GIT_VERSION.split("-")[-1][1:]
-    with urllib.request.urlopen(
-        "https://api.github.com/repos/tensorflow/tensorflow/commits/{}".format(entry)
-    ) as response:
-        data = json.loads(response.read().decode("utf-8"))
+    tensorflow_commit = tf.version.GIT_VERSION.split("-")[-1][1:]
 
-        # url = https://api.github.com/repos/tensorflow/tensorflow/git/commits/{commit}
-        tensorflow_commit = data["commit"]["url"].split("/commits/")[-1]
-
-    # Get contents of workspace.bzl
     with urllib.request.urlopen(
         "https://raw.githubusercontent.com/tensorflow/tensorflow/{}/tensorflow/workspace.bzl".format(
             tensorflow_commit

@@ -937,12 +937,7 @@ tensorflow_archive(
         """echo 'config_setting(name = "linux_ppc64le", values = {"cpu": "ppc"}, visibility = ["//visibility:public"])' >> tensorflow/BUILD""",
         """sed -i.bak 's/cmd = ("/cmd = ("python3 /g' third_party/llvm/llvm.bzl""",
     ],
-    sha256 = "{sha256}",
-    strip_prefix = "tensorflow-{commit}",
-    urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/{commit}.tar.gz",
-        "https://github.com/tensorflow/tensorflow/archive/{commit}.tar.gz",
-    ],
+    remote = "https://github.com/tensorflow/tensorflow",
 )
 
 llvm_archive(
