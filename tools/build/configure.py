@@ -16,7 +16,6 @@
 import re
 import sys
 import json
-import base64
 import urllib.request
 import tensorflow as tf
 
@@ -36,12 +35,11 @@ def write_config():
 
     # Get contents of workspace.bzl
     with urllib.request.urlopen(
-        "https://api.github.com/repos/tensorflow/tensorflow/contents/tensorflow/workspace.bzl?ref={}".format(
+        "https://raw.githubusercontent.com/tensorflow/tensorflow/{}/tensorflow/workspace.bzl".format(
             tensorflow_commit
         )
     ) as response:
-        data = json.loads(response.read().decode("utf-8"))
-        lines = base64.b64decode(data["content"]).decode("utf-8").split("\n")
+        lines = response.read().decode("utf-8").split("\n")
         lines = [line.strip() for line in lines]
         # Get LLVM_COMMIT = "{commit}"
         llvm_commit = [line for line in lines if line.startswith('LLVM_COMMIT = "')][0][
