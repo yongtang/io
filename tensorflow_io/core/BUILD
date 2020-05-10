@@ -28,6 +28,7 @@ cc_library(
     name = "optimization",
     srcs = [
         "kernels/io_optimization.cc",
+        "kernels/mlir_graph_optimization_pass.h",
     ],
     copts = tf_io_copts(),
     linkstatic = True,

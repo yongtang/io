@@ -3,7 +3,10 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "tf_header_lib",
     hdrs = [":tf_header_include"],
-    includes = ["include"],
+    includes = [
+        "include",
+        "include/external/llvm-project/mlir/include",
+    ],
     visibility = ["//visibility:public"],
 )
 

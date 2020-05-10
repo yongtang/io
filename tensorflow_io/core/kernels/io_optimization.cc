@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/core/common_runtime/optimization_registry.h"
+#include "mlir_graph_optimization_pass.h"
 
 namespace tensorflow {
 namespace io {
