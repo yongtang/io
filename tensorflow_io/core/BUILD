@@ -32,6 +32,12 @@ cc_library(
     copts = tf_io_copts(),
     linkstatic = True,
     deps = [
+        "@llvm-project//llvm:support",
+        "@llvm-project//mlir:Pass",
+"@llvm-project//mlir:Transforms",
+"@llvm-project//mlir:Dialect",
+"@llvm-project//mlir:DerivedAttributeOpInterface",
+"@llvm-project//mlir:InferTypeOpInterface",
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
     ],
