@@ -26,6 +26,7 @@ def test_f():
     @tf.function
     def f(v):
         v = tfio.audio.decode_wav(v, dtype=tf.int16)
+        v = v + 1
         v = tfio.audio.encode_wav(v, 44100)
         return v
 

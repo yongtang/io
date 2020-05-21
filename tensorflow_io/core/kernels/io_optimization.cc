@@ -15,14 +15,78 @@ limitations under the License.
 
 #include "mlir/IR/Diagnostics.h"         // from @llvm-project
 #include "mlir/IR/Module.h"              // from @llvm-project
+#include "mlir/IR/OperationSupport.h"              // from @llvm-project
 #include "mlir/Pass/PassManager.h"       // from @llvm-project
 #include "mlir/Support/LogicalResult.h"  // from @llvm-project
+#include "mlir/Pass/Pass.h"  // from @llvm-project
+#include "mlir/Pass/PassRegistry.h"  // from @llvm-project
+#include "mlir/IR/PatternMatch.h"  // from @llvm-project
 #include "tensorflow/compiler/mlir/mlir_graph_optimization_pass.h"
 #include "tensorflow/compiler/mlir/tensorflow/utils/error_util.h"
+#include "tensorflow/compiler/mlir/tensorflow/utils/translate_utils.h"
+#include "tensorflow/compiler/mlir/tensorflow/transforms/passes.h"
+#include "tensorflow/compiler/mlir/tensorflow/ir/tf_ops.h"
+#include "tensorflow/compiler/mlir/tensorflow/ir/tf_types.h"
 
 namespace tensorflow {
 namespace io {
 namespace {
+
+// Replace TF BatchMatMul by TF Einsum
+struct BatchMatMulToEinsumPass
+    : public mlir::PassWrapper<BatchMatMulToEinsumPass, mlir::FunctionPass> {
+  void runOnFunction() override;
+};
+
+struct FuseParallelMapAndBatch : public mlir::OpRewritePattern<mlir::TF::AddV2Op> {
+  using mlir::OpRewritePattern<mlir::TF::AddV2Op>::OpRewritePattern;
+
+  mlir::LogicalResult matchAndRewrite(mlir::TF::AddV2Op op,
+                                mlir::PatternRewriter &rewriter) const override {
+std::cerr << "MATCH AND REWRITE" << std::endl;
+/*
+    auto batchInputDataset = op.input_dataset();
+
+    ParallelMapDatasetOp batchInputOp = dyn_cast_or_null<ParallelMapDatasetOp>(
+        batchInputDataset.getDefiningOp());
+    if (!batchInputOp) return failure();
+
+    // The type of the `num_parallel_calls` argument in ParallelMapDataset
+    // and MapAndBatchDataset is different (int32 and int64 respectively)
+    auto num_parallel_calls_op = rewriter.create<CastOp>(
+        op.getLoc(), UnrankedTensorType::get(rewriter.getIntegerType(64)),
+        batchInputOp.num_parallel_calls(), rewriter.getBoolAttr(false));
+
+    auto fused_op = rewriter.create<MapAndBatchDatasetOp>(
+        op.getLoc(), op.getType(), batchInputOp.input_dataset(),
+        batchInputOp.other_arguments(), op.batch_size(),
+        num_parallel_calls_op.y(), op.drop_remainder(), batchInputOp.f(),
+        op.output_types(), op.output_shapes(),
+        batchInputOp.preserve_cardinality());
+    rewriter.replaceOp(op, {fused_op.handle()});
+    return failure();
+*/
+return success();
+  }
+};
+
+void BatchMatMulToEinsumPass::runOnFunction() {
+  mlir::OwningRewritePatternList patterns;
+  auto func = getFunction();
+
+  patterns.insert<FuseParallelMapAndBatch>(
+      &getContext());
+  applyPatternsAndFoldGreedily(func, patterns);
+}
+
+static mlir::PassRegistration<BatchMatMulToEinsumPass> pass(
+    "tf-batch-matmul-to-tf-einsum",
+    "Replace TF BatchMatMul op by TF Einsum op.");
+
+std::unique_ptr<mlir::OperationPass<mlir::FuncOp>> CreateAudioOptimizationPass() {
+  return std::make_unique<BatchMatMulToEinsumPass>();
+}
+
 
 class MlirIOGraphOptimizationPass : public ::tensorflow::MlirOptimizationPass {
  public:
@@ -51,6 +115,10 @@ class MlirIOGraphOptimizationPass : public ::tensorflow::MlirOptimizationPass {
     llvm::raw_string_ostream os(str);
     module.print(os);
     LOG(INFO) << "IO Graph: " << os.str();
+
+    pm.addPass(CreateAudioOptimizationPass());
+    mlir::LogicalResult result = pm.run(module);
+
     return Status::OK();
   }
 };
