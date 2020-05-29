@@ -35,20 +35,32 @@ std::cerr << "XXXXX runOnFunction() ENTER XXXXX" << std::endl;
 
  auto f = getFunction();
     f.walk([&](mlir::Operation *op) {
+if (op->getName().getStringRef().str() == "tf.IO>AudioEncodeWAV") {
 std::cerr << "XXXXX runOnFunction() NAME XXXXX: " << op->getName().getStringRef().str() << std::endl;
-std::cerr << "XXXXX runOnFunction() DIALECT XXXXX: " << op->getName().getDialect().str() << std::endl;
+
+std::cerr << "XXXXX runOnFunction() op->getNumOperands() XXXXX: " << op->getNumOperands() << std::endl;
+for (auto attr: op->getAttrs()) {
+std::cerr << "XXXXX runOnFunction() ATTR XXXXX: " << attr.first.str() << std::endl;
+if (attr.first.str() == "codec") {
+std::cerr << "XXXXX runOnFunction() ATTR2 XXXXX: " << attr.second.isa<mlir::StringAttr>() << std::endl;
+std::cerr << "XXXXX runOnFunction() ATTR3 XXXXX: " << attr.second.dyn_cast<mlir::StringAttr>().getValue().str() << std::endl;
+}
+}
+}
     });
+
 /*
     mlir::ConversionTarget target(getContext());
 
-    target.addDynamicallyLegalDialect<mlir::TF::TensorFlowDialect>([](mlir::Operation *op -> bool {
+    target.addDynamicallyLegalDialect<mlir::TF::TensorFlowDialect>(llvm::Optional<mlir::ConversionTarget::DynamicLegalityCallbackFn>([](mlir::Operation *op) {
 std::cerr << "XXXXX DynamicallyLegal() NAME XXXXX: " << op->getName().getStringRef().str() << std::endl;
+
 std::cerr << "XXXXX DynamicallyLegal() DIALECT XXXXX: " << op->getName().getDialect().str() << std::endl;
 
       return false;
-    });
+    }));
 
-    OwningRewritePatternList patterns;
+    mlir::OwningRewritePatternList patterns;
     patterns.insert<OptimizingAudioOp>(&getContext());
     if (failed(applyPartialConversion(getFunction(), target, patterns))) {
       signalPassFailure();

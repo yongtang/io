@@ -90,6 +90,7 @@ REGISTER_OP("IO>AudioEncodeWAV")
     .Input("rate: int64")
     .Output("value: string")
     .Attr("dtype: {uint8, int16, int32, float32}")
+    .Attr("codec: string='lame'")
     .SetShapeFn([](shape_inference::InferenceContext* c) {
       c->set_output(0, c->Scalar());
       return Status::OK();
