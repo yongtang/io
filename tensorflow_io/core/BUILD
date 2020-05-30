@@ -38,6 +38,7 @@ cc_library(
 "@llvm-project//mlir:Dialect",
 "@llvm-project//mlir:DerivedAttributeOpInterface",
 "@llvm-project//mlir:InferTypeOpInterface",
+"@llvm-project//mlir:AllPassesAndDialectsNoRegistration",
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
     ],
