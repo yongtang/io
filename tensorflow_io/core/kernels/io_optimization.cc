@@ -38,10 +38,10 @@ struct BatchMatMulToEinsumPass
   void runOnFunction() override;
 };
 
-struct FuseParallelMapAndBatch : public mlir::OpRewritePattern<mlir::TF::AddV2Op> {
-  using mlir::OpRewritePattern<mlir::TF::AddV2Op>::OpRewritePattern;
+struct FuseParallelMapAndBatch : public mlir::OpRewritePattern<mlir::tf_executor::AddV2Op> {
+  using mlir::OpRewritePattern<mlir::tf_executor::AddV2Op>::OpRewritePattern;
 
-  mlir::LogicalResult matchAndRewrite(mlir::TF::AddV2Op op,
+  mlir::LogicalResult matchAndRewrite(mlir::tf_executor::AddV2Op op,
                                 mlir::PatternRewriter &rewriter) const override {
 std::cerr << "MATCH AND REWRITE" << std::endl;
 /*
@@ -66,7 +66,7 @@ std::cerr << "MATCH AND REWRITE" << std::endl;
     rewriter.replaceOp(op, {fused_op.handle()});
     return failure();
 */
-return success();
+return mlir::success();
   }
 };
 
