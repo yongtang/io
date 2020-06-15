@@ -836,6 +836,24 @@ llvm_toolchain(
     llvm_version = "9.0.0",
 )
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_rust",
+    sha256 = "70bb7833c88e35eb86d9cd878641236cbb84c3ea6012858de8ba6f70cebdce7f",
+    strip_prefix = "rules_rust-77ad6cccd16eea725bff3a2311d483dbea51347c",
+    urls = [
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/77ad6cccd16eea725bff3a2311d483dbea51347c.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/archive/77ad6cccd16eea725bff3a2311d483dbea51347c.tar.gz",
+    ],
+)
+
+load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
+rust_repositories()
+
+load("@io_bazel_rules_rust//:workspace.bzl", "bazel_version")
+bazel_version(name = "bazel_version")
+
 http_archive(
     name = "vorbis",
     build_file = "//third_party:vorbis.BUILD",
@@ -943,4 +961,15 @@ new_git_repository(
     build_file = "//third_party:libgav1.BUILD",
     commit = "6ab7d65a68350ed4ec6aaabfa18715b2d76a231c",
     remote = "https://chromium.googlesource.com/codecs/libgav1",
+)
+
+http_archive(
+    name = "rav1e",
+    build_file = "//third_party:rav1e.BUILD",
+    sha256 = "a091f3387055e472b6e028aa013cf0f37fb5acce9f4db2605d929bbffb448d01",
+    strip_prefix = "rav1e-0.3.3",
+    urls = [
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/xiph/rav1e/archive/v0.3.3.tar.gz",
+        "https://github.com/xiph/rav1e/archive/v0.3.3.tar.gz",
+    ],
 )

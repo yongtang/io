@@ -22,7 +22,7 @@ cc_library(
         #"AVIF_CODEC_AOM=1",
         "AVIF_CODEC_DAV1D=1",
         "AVIF_CODEC_LIBGAV1=1",
-        #"AVIF_CODEC_RAV1E=1",
+        "AVIF_CODEC_RAV1E=1",
     ],
     includes = [
         "include",
@@ -31,5 +31,6 @@ cc_library(
     deps = [
         "@dav1d",
         "@libgav1",
+        "@rav1e",
     ],
 )
