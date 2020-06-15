@@ -492,17 +492,21 @@ http_archive(
         """sed -i.bak 's/"python",/"python3",/g' third_party/py/python_configure.bzl""",
         """sed -i.bak 's/PYTHONHASHSEED=0/PYTHONHASHSEED=0 python3/g' bazel/cython_library.bzl""",
     ],
-    sha256 = "2fcb7f1ab160d6fd3aaade64520be3e5446fc4c6fa7ba6581afdc4e26094bd81",
-    strip_prefix = "grpc-1.26.0",
+    sha256 = "c2ab8a42a0d673c1acb596d276055adcc074c1116e427f118415da3e79e52969",
+    strip_prefix = "grpc-1.27.3",
     urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.26.0.tar.gz",
-        "https://github.com/grpc/grpc/archive/v1.26.0.tar.gz",
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.27.3.tar.gz",
+        "https://github.com/grpc/grpc/archive/v1.27.3.tar.gz",
     ],
 )
 
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
 
 grpc_deps()
+
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
+
+grpc_extra_deps()
 
 load("@rules_python//python:pip.bzl", "pip_repositories")
 
@@ -835,6 +839,24 @@ llvm_toolchain(
     name = "llvm_toolchain",
     llvm_version = "9.0.0",
 )
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_rust",
+    sha256 = "b6da34e057a31b8a85e343c732de4af92a762f804fc36b0baa6c001423a70ebc",
+    strip_prefix = "rules_rust-55f77017a7f5b08e525ebeab6e11d8896a4499d2",
+    urls = [
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/77ad6cccd16eea725bff3a2311d483dbea51347c.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/archive/77ad6cccd16eea725bff3a2311d483dbea51347c.tar.gz",
+    ],
+)
+
+load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
+rust_repositories()
+
+load("@io_bazel_rules_rust//:workspace.bzl", "bazel_version")
+bazel_version(name = "bazel_version")
 
 http_archive(
     name = "vorbis",
