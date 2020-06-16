@@ -44,3 +44,18 @@ cc_library(
 exports_files([
     "parquet/parquet_types.cpp",
 ])
+
+cc_library(
+    name = "aom",
+    srcs = [
+"aom/config/aom_dsp_rtcd.h",
+"aom/config/aom_scale_rtcd.h",
+"aom/config/av1_rtcd.h",
+    ],
+    hdrs = [],
+    copts = [],
+    includes = ["aom"],
+    visibility = ["//visibility:public"],
+    deps = [],
+)
+

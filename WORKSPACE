@@ -837,6 +837,19 @@ llvm_toolchain(
 )
 
 http_archive(
+    name = "nasm",
+    build_file = "//third_party:nasm.BUILD",
+        urls = [
+            "https://storage.googleapis.com/mirror.tensorflow.org/www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2",
+            "http://pkgs.fedoraproject.org/repo/pkgs/nasm/nasm-2.13.03.tar.bz2/sha512/d7a6b4cee8dfd603d8d4c976e5287b5cc542fa0b466ff989b743276a6e28114e64289bf02a7819eca63142a5278aa6eed57773007e5f589e15768e6456a8919d/nasm-2.13.03.tar.bz2",
+            "http://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2",
+        ],
+        sha256 = "63ec86477ad3f0f6292325fd89e1d93aea2e2fd490070863f17d48f7cd387011",
+
+    strip_prefix = "nasm-2.13.03",
+)
+
+http_archive(
     name = "vorbis",
     build_file = "//third_party:vorbis.BUILD",
     sha256 = "43fc4bc34f13da15b8acfa72fd594678e214d1cab35fc51d3a54969a725464eb",
@@ -951,4 +964,11 @@ new_git_repository(
     build_file = "//third_party:libgav1.BUILD",
     commit = "6ab7d65a68350ed4ec6aaabfa18715b2d76a231c",
     remote = "https://chromium.googlesource.com/codecs/libgav1",
+)
+
+new_git_repository(
+    name = "aom",
+    build_file = "//third_party:aom.BUILD",
+    commit = "d4b4c81445ceb041bfc6eb7089f55893bf26dc77",
+    remote = "https://aomedia.googlesource.com/aom",
 )

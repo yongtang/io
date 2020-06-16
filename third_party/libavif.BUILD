@@ -13,13 +13,13 @@ cc_library(
             "src/*.c",
         ],
         exclude = [
-            "src/codec_aom.c",
+#            "src/codec_aom.c",
             "src/codec_rav1e.c",
         ],
     ),
     hdrs = [],
     defines = [
-        #"AVIF_CODEC_AOM=1",
+        "AVIF_CODEC_AOM=1",
         "AVIF_CODEC_DAV1D=1",
         "AVIF_CODEC_LIBGAV1=1",
         #"AVIF_CODEC_RAV1E=1",
@@ -32,5 +32,6 @@ cc_library(
         "@dav1d//:dav1d16",
         "@dav1d//:dav1d8",
         "@libgav1",
+"@aom",
     ],
 )
