@@ -29,8 +29,9 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "@dav1d//:dav1d16",
-        "@dav1d//:dav1d8",
+        #"@dav1d//:dav1d16",
+        #"@dav1d//:dav1d8",
+        "@dav1d",
         "@libgav1",
     ],
 )

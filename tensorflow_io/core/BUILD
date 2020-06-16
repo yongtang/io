@@ -568,6 +568,7 @@ cc_binary(
     name = "python/ops/libtensorflow_io.so",
     copts = tf_io_copts(),
     linkshared = 1,
+linkopts = ["-read_only_relocs", "suppress"],
     deps = [
         "//tensorflow_io/arrow:arrow_ops",
         "//tensorflow_io/bigquery:bigquery_ops",

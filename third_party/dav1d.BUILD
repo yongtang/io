@@ -6,6 +6,42 @@ licenses(["notice"])  # BSD license
 exports_files(["COPYING"])
 
 cc_library(
+    name = "dav1d",
+    srcs = [
+        "build/asm/cpuid.o",
+        "build/asm/msac.o",
+        "build/asm/cdef.o",
+        "build/asm/film_grain.o",
+        "build/asm/ipred.o",
+        "build/asm/itx.o",
+        "build/asm/loopfilter.o",
+        "build/asm/looprestoration.o",
+        "build/asm/mc.o",
+        "build/asm/cdef_sse.o",
+        "build/asm/film_grain_ssse3.o",
+        "build/asm/ipred_ssse3.o",
+        "build/asm/itx_ssse3.o",
+        "build/asm/loopfilter_ssse3.o",
+        "build/asm/looprestoration_ssse3.o",
+        "build/asm/mc_ssse3.o",
+    ],
+    hdrs = [],
+    copts = [
+"-fPIC",
+],
+    defines = [],
+    includes = [
+        "include8",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":dav1d8",
+        ":dav1d16",
+    ],
+    alwayslink = 1,
+)
+
+cc_library(
     name = "dav1d8",
     srcs = [
         "include8/common/bitdepth.h",
@@ -25,7 +61,7 @@ cc_library(
         "src/recon_tmpl.c",
     ],
     hdrs = [],
-    copts = [],
+    copts = ["-fPIC",],
     defines = [],
     includes = [
         "include8",
@@ -55,16 +91,16 @@ cc_library(
         "src/lr_apply_tmpl.c",
         "src/mc_tmpl.c",
         "src/recon_tmpl.c",
-            'src/x86/cdef_init_tmpl.c',
-            'src/x86/film_grain_init_tmpl.c',
-            'src/x86/ipred_init_tmpl.c',
-            'src/x86/itx_init_tmpl.c',
-            'src/x86/loopfilter_init_tmpl.c',
-            'src/x86/looprestoration_init_tmpl.c',
-            'src/x86/mc_init_tmpl.c',
+        "src/x86/cdef_init_tmpl.c",
+        "src/x86/film_grain_init_tmpl.c",
+        "src/x86/ipred_init_tmpl.c",
+        "src/x86/itx_init_tmpl.c",
+        "src/x86/loopfilter_init_tmpl.c",
+        "src/x86/looprestoration_init_tmpl.c",
+        "src/x86/mc_init_tmpl.c",
     ],
     hdrs = [],
-    copts = [],
+    copts = ["-fPIC",],
     defines = [],
     includes = [
         "include16",
@@ -102,8 +138,24 @@ cc_library(
         "src/thread_task.c",
         "src/warpmv.c",
         "src/wedge.c",
-"src/x86/cpu.c",
-'src/x86/msac_init.c',
+        "src/x86/cpu.c",
+        "src/x86/msac_init.c",
+        #"build/asm/cpuid.o",
+        #"build/asm/msac.o",
+        #"build/asm/cdef.o",
+        #"build/asm/film_grain.o",
+        #"build/asm/ipred.o",
+        #"build/asm/itx.o",
+        #"build/asm/loopfilter.o",
+        #"build/asm/looprestoration.o",
+        #"build/asm/mc.o",
+        #"build/asm/cdef_sse.o",
+        #"build/asm/film_grain_ssse3.o",
+        #"build/asm/ipred_ssse3.o",
+        #"build/asm/itx_ssse3.o",
+        #"build/asm/loopfilter_ssse3.o",
+        #"build/asm/looprestoration_ssse3.o",
+        #"build/asm/mc_ssse3.o",
     ] + select({
         "@bazel_tools//src/conditions:windows": [
             "src/win32/thread.c",
@@ -111,12 +163,14 @@ cc_library(
         "//conditions:default": [],
     }),
     hdrs = [],
-    copts = [],
+    copts = ["-fPIC",],
     defines = [],
+    linkstatic = 1,
     visibility = ["//visibility:public"],
     deps = [
         ":header",
     ],
+    alwayslink = 1,
 )
 
 cc_library(
@@ -141,7 +195,7 @@ cc_library(
         "//conditions:default": [],
     }),
     copts = [
-        "-std=c99",
+        "-std=c99","-fPIC",
     ],
     defines = [
         "_FILE_OFFSET_BITS=64",
@@ -159,6 +213,70 @@ cc_library(
     }),
     visibility = ["//visibility:public"],
     deps = [],
+)
+
+genrule(
+    name = "asm",
+    srcs = [
+        "src/x86/cpuid.asm",
+        "src/x86/msac.asm",
+        "src/x86/cdef.asm",
+        "src/x86/film_grain.asm",
+        "src/x86/ipred.asm",
+        "src/x86/itx.asm",
+        "src/x86/loopfilter.asm",
+        "src/x86/looprestoration.asm",
+        "src/x86/mc.asm",
+        "src/x86/cdef_sse.asm",
+        "src/x86/film_grain_ssse3.asm",
+        "src/x86/ipred_ssse3.asm",
+        "src/x86/itx_ssse3.asm",
+        "src/x86/loopfilter_ssse3.asm",
+        "src/x86/looprestoration_ssse3.asm",
+        "src/x86/mc_ssse3.asm",
+        "src/ext/x86/x86inc.asm",
+        "build/config.asm",
+    ],
+    outs = [
+        "build/asm/cpuid.o",
+        "build/asm/msac.o",
+        "build/asm/cdef.o",
+        "build/asm/film_grain.o",
+        "build/asm/ipred.o",
+        "build/asm/itx.o",
+        "build/asm/loopfilter.o",
+        "build/asm/looprestoration.o",
+        "build/asm/mc.o",
+        "build/asm/cdef_sse.o",
+        "build/asm/film_grain_ssse3.o",
+        "build/asm/ipred_ssse3.o",
+        "build/asm/itx_ssse3.o",
+        "build/asm/loopfilter_ssse3.o",
+        "build/asm/looprestoration_ssse3.o",
+        "build/asm/mc_ssse3.o",
+    ],
+    cmd = "for out in $(OUTS); do\n" +
+          "  $(location @nasm//:nasm) -f macho64" +
+          "    -DELF -DPIC -D__x86_64__" +
+          "    -I $$(dirname $(location build/config.asm))/" +
+          "    -I $$(dirname $(location src/ext/x86/x86inc.asm))/../../" +
+          "    -o $$out" +
+          "    $$(dirname $(location src/x86/cpuid.asm))/$$(basename $${out%.o}.asm)\n" +
+          "done",
+    tools = ["@nasm"],
+)
+
+genrule(
+    name = "build_config_asm",
+    outs = ["build/config.asm"],
+    cmd = "\n".join([
+        "cat <<'EOF' >$@",
+        "%define ARCH_X86_32 0",
+        "%define ARCH_X86_64 1",
+        "%define PIC 1",
+        "%define STACK_ALIGNMENT 32",
+        "EOF",
+    ]),
 )
 
 genrule(
