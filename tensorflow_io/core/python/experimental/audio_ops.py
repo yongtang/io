@@ -17,13 +17,12 @@
 import tensorflow as tf
 
 
-def decode_mulaw(input, quantization=None, name=None):
+def decode_mulaw(input, name=None):
     """
-    Decode mu law encoded single (ITU-T, 1988).
+    Decode mu law encoded single (G.711).
 
     Args:
       input: A signal to be decoded.
-      quantization: Number of channels. Default 256.
       name: A name for the operation (optional).
 
     Returns:
@@ -37,21 +36,19 @@ def decode_mulaw(input, quantization=None, name=None):
     return x
 
 
-def encode_mulaw(input, quantization=None, name=None):
+def encode_mulaw(input, name=None):
     """
-    Perform mu law companding transformation (ITU-T, 1988).
+    Perform mu law companding transformation (G.711).
 
     Args:
       input: A signal to be encoded.
-      quantization: Number of channels. Default 256.
       name: A name for the operation (optional).
 
     Returns:
       A mu law encoded signal.
     """
-    if quantization is None:
-        quantization = 256
-    mu = tf.cast(quantization, tf.float32) - 1
+    mu = 255
+    input = tf.convert_to_tensor(input, tf.int16)
     x = tf.cast(input, tf.float32)
-    y = tf.sign(x) * tf.math.log1p(mu * tf.math.abs(x)) / tf.math.log1p(mu)
-    return tf.cast((y + 1) / 2 * mu + 0.5, tf.int32)
+    y = tf.math.sign(x) * tf.math.log1p(mu * tf.math.abs(x)) / tf.math.log1p(mu)
+    return tf.where(tf.math.greater(tf.sign(x), 0), tf.bitwise.invert(tf.cast((f)* 127, tf.uint8)), tf.cast((f + 1)* 127, tf.uint8))
