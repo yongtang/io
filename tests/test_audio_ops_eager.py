@@ -805,3 +805,38 @@ def test_encode_mp3_mono():
     assert audio.shape == [5760, 1]
     audio = tf.cast(audio, tf.float32) / 32768.0
     _ = tfio.audio.encode_mp3(audio, rate=8000)
+
+
+def test_spectrogram():
+    """test_spectrogram"""
+
+    path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "test_audio",  "whistle.wav",
+    )
+    audio = tfio.audio.decode_wav(tf.io.read_file(path), dtype=tf.int16)
+    assert audio.shape == [276858, 2]
+    audio = tf.cast(audio, tf.float32) / 32768.0
+
+    audio = audio[:, 0] #tf.math.reduce_mean(audio, axis=1)
+    window = 400
+    stride = 200
+    nfft = 400
+    spectrogram = tfio.experimental.audio.spectrogram(audio, window, stride, nfft)
+    mel_spectrogram = tfio.experimental.audio.mel_spectrogram(audio, window, stride, nfft)
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.plot(audio.numpy())
+    plt.savefig('sample1.png')
+
+    plt.figure()
+    x = tf.math.log(spectrogram) - tf.math.log(2.0)
+    plt.imshow(np.swapaxes(x.numpy(), 0, 1), cmap='gray')
+    plt.savefig('sample2.png')
+
+    print("SHAPE: ", audio.shape)
+    print("SPEC: ", spectrogram.shape)
+
+    # import librosa
+    # Calculate the spectrogram as the square of the complex magnitude of the STFT
+    # spectrogram_librosa = np.abs(librosa.stft(
+    #    y, n_fft=n_fft, hop_length=hop_length, win_length=n_fft, window='hann')) ** 2
