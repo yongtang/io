@@ -2,8 +2,6 @@ name: GitHub CI
 
 on:
   push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
@@ -313,6 +311,7 @@ jobs:
           python3 -m pip install wheel setuptools
           python3 -m pip --version
           python3 setup.py --package-version | xargs python3 -m pip install
+          python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_compile_flags())'
           python3 tools/build/configure.py
           cat .bazelrc
           bazel build -s --verbose_failures //tensorflow_io/core:python/ops/libtensorflow_io.so
