@@ -35,6 +35,7 @@ jobs:
           docker version
           bash -x -e tests/test_azure/start_azure.sh
           bash -x -e tests/test_aws/aws_test.sh
+          bash -x -e tests/test_gcloud/test_gcs.sh gcs-emulator
       - name: Test macOS
         run: |
           set -x -e
