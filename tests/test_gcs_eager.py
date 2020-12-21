@@ -27,8 +27,8 @@ import pytest
 
 
 @pytest.mark.skipif(
-    sys.platform in ("win32", "darwin"),
-    reason="TODO GCS emulator not setup properly on macOS/Windows yet",
+    sys.platform == "win32",
+    reason="TODO GCS emulator not setup properly on Windows yet",
 )
 def test_read_file():
     """Test case for reading GCS"""
