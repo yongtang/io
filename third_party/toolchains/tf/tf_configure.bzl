@@ -166,7 +166,9 @@ def _symlink_genrule_for_dir(
                 [
                     e
                     for e in _read_dir(repository_ctx, src_dir).splitlines()
-                    if "/external/aws" not in e
+                    if ("/external/aws" not in e)
+                    and ("external/boringssl" not in e)
+                    and ("external/curl" not in e)
                 ]
             )
         )
@@ -208,7 +210,9 @@ def _tf_pip_impl(repository_ctx):
 
     tf_shared_library_dir = repository_ctx.os.environ[_TF_SHARED_LIBRARY_DIR]
     tf_shared_library_name = repository_ctx.os.environ[_TF_SHARED_LIBRARY_NAME]
-    tf_shared_library_path = "{}/{}".format(tf_shared_library_dir, tf_shared_library_name)
+    tf_shared_library_path = "{}/{}".format(
+        tf_shared_library_dir, tf_shared_library_name
+    )
 
     tf_shared_library_rule = _symlink_genrule_for_dir(
         repository_ctx,
