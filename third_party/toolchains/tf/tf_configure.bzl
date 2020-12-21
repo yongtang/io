@@ -147,7 +147,8 @@ def _symlink_genrule_for_dir(
     if src_dir != None:
         src_dir = _norm_path(src_dir)
         dest_dir = _norm_path(dest_dir)
-        files = "\n".join(sorted(_read_dir(repository_ctx, src_dir).splitlines()))
+        # TODO: manually remove aws headers for now. Not needed after tensorflow drops aws.
+        files = "\n".join(sorted([e for e in _read_dir(repository_ctx, src_dir).splitlines() if "/external/aws" not in e]))
 
         # Create a list with the src_dir stripped to use for outputs.
         if tf_pip_dir_rename_pair_len:
