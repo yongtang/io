@@ -4,21 +4,20 @@ _TF_HEADER_DIR = "TF_HEADER_DIR"
 _TF_SHARED_LIBRARY_DIR = "TF_SHARED_LIBRARY_DIR"
 _TF_SHARED_LIBRARY_NAME = "TF_SHARED_LIBRARY_NAME"
 
-
-def _tpl(repository_ctx, tpl, substitutions={}, out=None):
+def _tpl(repository_ctx, tpl, substitutions = {}, out = None):
     if not out:
         out = tpl
     repository_ctx.template(
-        out, Label("//third_party/toolchains/tf:%s.tpl" % tpl), substitutions,
+        out,
+        Label("//third_party/toolchains/tf:%s.tpl" % tpl),
+        substitutions,
     )
-
 
 def _fail(msg):
     """Output failure message when auto configuration fails."""
     red = "\033[0;31m"
     no_color = "\033[0m"
     fail("{}Python Configuration Error:{} {}\n".format(red, no_color, msg))
-
 
 def _is_windows(repository_ctx):
     """Returns true if the host operating system is windows."""
@@ -27,10 +26,12 @@ def _is_windows(repository_ctx):
         return True
     return False
 
-
 def _execute(
-    repository_ctx, cmdline, error_msg=None, error_details=None, empty_stdout_fine=False
-):
+        repository_ctx,
+        cmdline,
+        error_msg = None,
+        error_details = None,
+        empty_stdout_fine = False):
     """Executes an arbitrary shell command.
     Args:
       repository_ctx: the repository_ctx object
@@ -50,11 +51,10 @@ def _execute(
                     error_msg.strip() if error_msg else "Repository command failed",
                     result.stderr.strip(),
                     error_details if error_details else "",
-                ]
-            )
+                ],
+            ),
         )
     return result
-
 
 def _read_dir(repository_ctx, src_dir):
     """Returns a string with all files in a directory.
@@ -67,7 +67,7 @@ def _read_dir(repository_ctx, src_dir):
         find_result = _execute(
             repository_ctx,
             ["cmd.exe", "/c", "dir", src_dir, "/b", "/s", "/a-d"],
-            empty_stdout_fine=True,
+            empty_stdout_fine = True,
         )
 
         # src_files will be used in genrule.outs where the paths must
@@ -77,11 +77,10 @@ def _read_dir(repository_ctx, src_dir):
         find_result = _execute(
             repository_ctx,
             ["find", src_dir, "-follow", "-type", "f"],
-            empty_stdout_fine=True,
+            empty_stdout_fine = True,
         )
         result = find_result.stdout
     return result
-
 
 def _genrule(genrule_name, command, outs):
     """Returns a string with a genrule.
@@ -97,17 +96,16 @@ def _genrule(genrule_name, command, outs):
         A genrule target.
     """
     return (
-        "genrule(\n"
-        + '    name = "'
-        + genrule_name
-        + '",\n'
-        + "    outs = [\n"
-        + "{}\n".format(outs)
-        + "    ],\n"
-        + '    cmd = """ {} """,\n'.format(command)
-        + ")\n"
+        "genrule(\n" +
+        '    name = "' +
+        genrule_name +
+        '",\n' +
+        "    outs = [\n" +
+        "{}\n".format(outs) +
+        "    ],\n" +
+        '    cmd = """ {} """,\n'.format(command) +
+        ")\n"
     )
-
 
 def _norm_path(path):
     """Returns a path with '/' and remove the trailing slash."""
@@ -116,16 +114,14 @@ def _norm_path(path):
         path = path[:-1]
     return path
 
-
 def _symlink_genrule_for_dir(
-    repository_ctx,
-    src_dir,
-    dest_dir,
-    genrule_name,
-    src_files=[],
-    dest_files=[],
-    tf_pip_dir_rename_pair=[],
-):
+        repository_ctx,
+        src_dir,
+        dest_dir,
+        genrule_name,
+        src_files = [],
+        dest_files = [],
+        tf_pip_dir_rename_pair = []):
     """Returns a genrule to symlink(or copy if on Windows) a set of files.
 
     If src_dir is passed, files will be read from the given directory; otherwise
@@ -151,8 +147,8 @@ def _symlink_genrule_for_dir(
     tf_pip_dir_rename_pair_len = len(tf_pip_dir_rename_pair)
     if tf_pip_dir_rename_pair_len != 0 and tf_pip_dir_rename_pair_len != 2:
         _fail(
-            "The size of argument tf_pip_dir_rename_pair should be either 0 or 2, but %d is given."
-            % tf_pip_dir_rename_pair_len
+            "The size of argument tf_pip_dir_rename_pair should be either 0 or 2, but %d is given." %
+            tf_pip_dir_rename_pair_len,
         )
 
     outs = []
@@ -160,25 +156,26 @@ def _symlink_genrule_for_dir(
     if src_dir != None:
         src_dir = _norm_path(src_dir)
         dest_dir = _norm_path(dest_dir)
+
         # TODO: manually remove aws headers for now. Not needed after tensorflow drops aws.
         files = "\n".join(
             sorted(
                 [
                     e
                     for e in _read_dir(repository_ctx, src_dir).splitlines()
-                    if ("/external/aws" not in e)
-                    and ("external/boringssl" not in e)
-                    and ("external/curl" not in e)
-                ]
-            )
+                    if ("/external/aws" not in e) and
+                       ("external/boringssl" not in e) and
+                       ("external/curl" not in e)
+                ],
+            ),
         )
 
         # Create a list with the src_dir stripped to use for outputs.
         if tf_pip_dir_rename_pair_len:
             dest_files = (
                 files.replace(src_dir, "")
-                .replace(tf_pip_dir_rename_pair[0], tf_pip_dir_rename_pair[1])
-                .splitlines()
+                    .replace(tf_pip_dir_rename_pair[0], tf_pip_dir_rename_pair[1])
+                    .splitlines()
             )
         else:
             dest_files = files.replace(src_dir, "").splitlines()
@@ -193,10 +190,9 @@ def _symlink_genrule_for_dir(
         for i in range(len(dest_files)):
             outs.append('        "{}",'.format(dest_files[i]))
             command.append(
-                'cp -r "{}" "{}"'.format(src_files[i], "$(@D)/" + dest_files[i])
+                'cp -r "{}" "{}"'.format(src_files[i], "$(@D)/" + dest_files[i]),
             )
     return _genrule(genrule_name, " && ".join(command), "\n".join(outs))
-
 
 def _tf_pip_impl(repository_ctx):
     tf_header_dir = repository_ctx.os.environ[_TF_HEADER_DIR]
@@ -205,13 +201,14 @@ def _tf_pip_impl(repository_ctx):
         tf_header_dir,
         "include",
         "tf_header_include",
-        tf_pip_dir_rename_pair=["tensorflow_core", "tensorflow"],
+        tf_pip_dir_rename_pair = ["tensorflow_core", "tensorflow"],
     )
 
     tf_shared_library_dir = repository_ctx.os.environ[_TF_SHARED_LIBRARY_DIR]
     tf_shared_library_name = repository_ctx.os.environ[_TF_SHARED_LIBRARY_NAME]
     tf_shared_library_path = "{}/{}".format(
-        tf_shared_library_dir, tf_shared_library_name
+        tf_shared_library_dir,
+        tf_shared_library_name,
     )
 
     tf_shared_library_rule = _symlink_genrule_for_dir(
@@ -219,11 +216,9 @@ def _tf_pip_impl(repository_ctx):
         None,
         "",
         "libtensorflow_framework.so",
-        src_files=[tf_shared_library_path],
-        dest_files=[
-            "_pywrap_tensorflow_internal.lib"
-            if _is_windows(repository_ctx)
-            else "libtensorflow_framework.so"
+        src_files = [tf_shared_library_path],
+        dest_files = [
+            "_pywrap_tensorflow_internal.lib" if _is_windows(repository_ctx) else "libtensorflow_framework.so",
         ],
     )
 
@@ -236,8 +231,7 @@ def _tf_pip_impl(repository_ctx):
         },
     )
 
-
 tf_configure = repository_rule(
-    implementation=_tf_pip_impl,
-    environ=[_TF_HEADER_DIR, _TF_SHARED_LIBRARY_DIR, _TF_SHARED_LIBRARY_NAME,],
+    implementation = _tf_pip_impl,
+    environ = [_TF_HEADER_DIR, _TF_SHARED_LIBRARY_DIR, _TF_SHARED_LIBRARY_NAME],
 )
