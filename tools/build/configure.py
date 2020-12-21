@@ -100,6 +100,9 @@ def write_config():
             bazel_rc.write(
                 'build --action_env TF_SHARED_LIBRARY_NAME="{}"\n'.format(library_name)
             )
+            # Hide symbols whenever possible
+            bazel_rc.write('build --copt="-fvisibility=hidden"\n')
+            # Default to C++14
             bazel_rc.write('build --cxxopt="-std=c++14"\n')
             for argv in sys.argv[1:]:
                 if argv == "--cuda":
