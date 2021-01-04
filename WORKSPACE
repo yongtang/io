@@ -280,14 +280,12 @@ http_archive(
     build_file = "//third_party:kafka.BUILD",
     patch_cmds = [
         "rm -f src/win32_config.h",
-        # TODO: Remove the fowllowing once librdkafka issue is resolved.
-        """sed -i.bak '\\|rd_kafka_log(rk,|,/ exceeded);/ s/^/\\/\\//' src/rdkafka_cgrp.c""",
     ],
-    sha256 = "f7fee59fdbf1286ec23ef0b35b2dfb41031c8727c90ced6435b8cf576f23a656",
-    strip_prefix = "librdkafka-1.5.0",
+    sha256 = "2105ca01fef5beca10c9f010bc50342b15d5ce6b73b2489b012e6d09a008b7bf",
+    strip_prefix = "librdkafka-1.5.3",
     urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/edenhill/librdkafka/archive/v1.5.0.tar.gz",
-        "https://github.com/edenhill/librdkafka/archive/v1.5.0.tar.gz",
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/edenhill/librdkafka/archive/v1.5.3.tar.gz",
+        "https://github.com/edenhill/librdkafka/archive/v1.5.3.tar.gz",
     ],
 )
 
