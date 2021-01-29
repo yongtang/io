@@ -161,8 +161,8 @@ std::string errno_to_string() {
     case container_delete_fail:
       return "container_delete_fail";
     /* blob level */
-    case blob__already_exists:
-      return "blob__already_exists";
+    case blob_already_exists:
+      return "blob_already_exists";
     case blob_not_exists:
       return "blob_not_exists";
     case blob_name_invalid:

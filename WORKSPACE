@@ -175,16 +175,16 @@ http_archive(
 http_archive(
     name = "com_github_azure_azure_storage_cpplite",
     build_file = "//third_party:azure.BUILD",
-    patch_cmds = [
-        "sed -i.bak 's/struct stat/struct_stat/' src/blob/blob_client_wrapper.cpp",
-        "echo '' >> include/base64.h",
-        "echo '#include <stdexcept>' >> include/base64.h",
-    ],
-    sha256 = "597d9894061f4871a909f1c2c3f56725a69c188ea17784cc71e1e170687faf00",
-    strip_prefix = "azure-storage-cpplite-0.2.0",
+    #patch_cmds = [
+    #    "sed -i.bak 's/struct stat/struct_stat/' src/blob/blob_client_wrapper.cpp",
+    #    "echo '' >> include/base64.h",
+    #    "echo '#include <stdexcept>' >> include/base64.h",
+    #],
+    sha256 = "25f34354fb0400ffe1b5a5c09c793c9fc8104d375910f6c84ab10fa50c0059cb",
+    strip_prefix = "azure-storage-cpplite-0.3.0",
     urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/Azure/azure-storage-cpplite/archive/v0.2.0.tar.gz",
-        "https://github.com/Azure/azure-storage-cpplite/archive/v0.2.0.tar.gz",
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/Azure/azure-storage-cpplite/archive/v0.3.0.tar.gz",
+        "https://github.com/Azure/azure-storage-cpplite/archive/v0.3.0.tar.gz",
     ],
 )
 
