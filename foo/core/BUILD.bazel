@@ -1,0 +1,16 @@
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],  # Apache 2.0
+)
+
+cc_binary(
+    name = "minimal",
+    srcs = [
+        "@org_tensorflow//tensorflow/lite/examples/minimal:minimal.cc",
+    ],
+    linkopts = [],
+    deps = [
+        "@org_tensorflow//tensorflow/lite:framework",
+        "@org_tensorflow//tensorflow/lite/kernels:builtin_ops",
+    ],
+)
