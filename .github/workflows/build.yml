@@ -1,0 +1,89 @@
+name: GitHub CI
+
+on:
+  push:
+    branches:
+      - data
+  pull_request:
+    branches:
+      - data
+
+jobs:
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          set -x -e
+          echo "Bring /usr/bin to front as GitHub does not use system python3 by default"
+          export PATH=/usr/bin:$PATH
+          echo $PATH
+          python3 --version
+          python3 -m pip --version
+          python3 -m pip freeze
+          python3 -c 'import site; print(site.getsitepackages())'
+          python3 -m pip install --user -U numpy
+          python3 -c 'import numpy as np; print(np.version.version)'
+          python3 --version
+          BAZEL_OS=$(uname | tr '[:upper:]' '[:lower:]')
+          BAZEL_VERSION=$(cat .bazelversion)
+          curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-${BAZEL_OS}-x86_64.sh
+          sudo bash -e bazel-${BAZEL_VERSION}-installer-${BAZEL_OS}-x86_64.sh
+          bazel build \
+            --noshow_progress \
+            --noshow_loading_progress \
+            --verbose_failures \
+            --test_output=errors \
+              //foo/...
+
+  ubuntu:
+    name: Ubuntu
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          set -x -e
+          python3 --version
+          python3 -m pip --version
+          python3 -m pip freeze
+          python3 -c 'import site; print(site.getsitepackages())'
+          python3 -m pip install --user -U numpy
+          python3 -c 'import numpy as np; print(np.version.version)'
+          python3 --version
+          bazel version
+          bazel build \
+            --noshow_progress \
+            --noshow_loading_progress \
+            --verbose_failures \
+            --test_output=errors \
+              //foo/...
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - env:
+          BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
+        shell: cmd
+        run: |
+          @echo on
+          set /P BAZEL_VERSION=< .bazelversion
+          curl -sSL -o bazel.exe https://github.com/bazelbuild/bazel/releases/download/%BAZEL_VERSION%/bazel-%BAZEL_VERSION%-windows-x86_64.exe
+          bazel version
+          python -c "import platform;print(platform.python_version())"
+          python3 --version
+          python3 -m pip install wheel setuptools
+          python3 -m pip --version
+          python3 -m pip freeze
+          python3 -c "import site; print(site.getsitepackages())"
+          python3 -m pip install --user -U numpy
+          python3 -c "import numpy as np; print(np.version.version)"
+          python3 -m pip --version
+          bazel build ^
+            --noshow_progress ^
+            --noshow_loading_progress ^
+            --verbose_failures ^
+            --test_output=errors ^
+              //foo/...
