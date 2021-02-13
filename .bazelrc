@@ -1,3 +1,11 @@
 build --experimental_repo_remote_exec 
 build --enable_platform_specific_config
+build:macos --cxxopt="-std=c++14" --host_cxxopt="-std=c++14"
+build:linux --cxxopt="-std=c++14" --host_cxxopt="-std=c++14"
+build:windows --cxxopt="/std:c++14" --host_cxxopt="/std:c++14"
 build:macos --copt -Wunguarded-availability
+build:linux --copt=-msse4.2 --copt=-mavx
+build:windows --copt=/Zc:preprocessor
+build:windows --copt=/D_USE_MATH_DEFINES --host_copt=/D_USE_MATH_DEFINES
+build:windows --copt=-DWIN32_LEAN_AND_MEAN --host_copt=-DWIN32_LEAN_AND_MEAN
+build:windows --copt=-DNOGDI --host_copt=-DNOGDI

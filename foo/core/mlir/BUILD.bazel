@@ -1,0 +1,47 @@
+load("@org_tensorflow//third_party/mlir:tblgen.bzl", "gentbl")
+
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],  # Apache 2.0
+)
+
+cc_binary(
+    name = "foo",
+    srcs = [
+        "foo.cc",
+    ],
+    deps = [
+    ],
+)
+
+cc_binary(
+    name = "foo-opt",
+    srcs = [
+        "foo_opt.cc",
+    ],
+    deps = [
+        "@llvm-project//mlir:AllPassesAndDialectsNoRegistration",
+        "@llvm-project//mlir:MlirOptLib",
+        "@llvm-project//mlir:StandardOps",
+        "@org_tensorflow//tensorflow/compiler/mlir:init_mlir",
+    ],
+)
+
+py_test(
+    name = "ops_tests",
+    srcs = [
+        "@llvm-project//llvm:lit",
+    ],
+    args = [
+        "-v",
+        "--no-indirectly-run-check",
+        "$(location tests/ops.mlir)",
+    ],
+    data = [
+        "tests/lit.cfg.py",
+        "tests/ops.mlir",
+        ":foo-opt",
+        "@llvm-project//llvm:FileCheck",
+    ],
+    main = "lit.py",
+)

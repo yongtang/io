@@ -36,6 +36,12 @@ jobs:
             --verbose_failures \
             --test_output=errors \
               //foo/...
+          bazel test \
+            --noshow_progress \
+            --noshow_loading_progress \
+            --verbose_failures \
+            --test_output=errors \
+              //foo/...
 
   ubuntu:
     name: Ubuntu
@@ -53,6 +59,12 @@ jobs:
           python3 --version
           bazel version
           bazel build \
+            --noshow_progress \
+            --noshow_loading_progress \
+            --verbose_failures \
+            --test_output=errors \
+              //foo/...
+          bazel test \
             --noshow_progress \
             --noshow_loading_progress \
             --verbose_failures \
