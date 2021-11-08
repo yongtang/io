@@ -115,8 +115,6 @@ jobs:
           if [[ "${EVENT_NAME}" == "push" && "${REPO_NAME}" == "tensorflow/io" ]]; then
             export BAZEL_OPTIMIZATION="$BAZEL_OPTIMIZATION --remote_upload_local_results=true --google_credentials=service_account_creds.json"
           fi
-          echo "Bring /usr/bin to front as GitHub does not use system python3 by default"
-          export PATH=/usr/bin:$PATH
           sudo -E -H bash -e .github/workflows/build.bazel.sh
       - uses: actions/upload-artifact@v2
         with:
