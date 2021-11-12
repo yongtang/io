@@ -48,6 +48,7 @@ cc_library(
     ],
     hdrs = [
         "config.h",
+        "win32/VC10/config.h",
     ] + glob(
         [
             "*.h",
