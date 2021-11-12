@@ -60,7 +60,6 @@ cc_library(
         "-D_REENTRANT",
         "-DHAVE_CONFIG_H",
         "-w",
-        "-DLIBXML_LZMA_ENABLED",
     ],
     includes = [
         ".",
