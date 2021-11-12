@@ -54,8 +54,7 @@ cc_library(
             "*.h",
             "include/libxml/*.h",
         ],
-        exclude = [
-        ],
+        exclude = [],
     ),
     copts = [
         "-D_REENTRANT",
@@ -70,8 +69,8 @@ cc_library(
     textual_hdrs = ["trionan.c"],
     visibility = ["//visibility:public"],
     deps = [
-        "@zlib",
         "@xz//:lzma",
+        "@zlib",
     ],
 )
 
