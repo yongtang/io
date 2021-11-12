@@ -81,6 +81,7 @@ genrule(
         "cat <<'EOF' >$@",
         "",
         "#if defined(_MSC_VER)",
+        "#define SEND_ARG2_CAST",
         '#include "win32/VC10/config.h"',
         "#else",
         "",
