@@ -76,7 +76,7 @@ cc_library(
 
 genrule(
     name = "config_h",
-    outs = ["config.c"],
+    outs = ["config.h"],
     cmd = "\n".join([
         "cat <<'EOF' >$@",
         "",
