@@ -90,8 +90,6 @@ genrule(
         "#if defined(_MSC_VER)",
         "#define GETHOSTBYNAME_ARG_CAST",
         "#define SEND_ARG2_CAST",
-        "#include <Windows.h>",
-        "#include <Wincrypt.h>",
         '#include "win32/VC10/config.h"',
         "#else",
         "",
