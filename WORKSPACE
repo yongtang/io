@@ -259,7 +259,8 @@ http_archive(
     name = "libxml_archive",
     build_file = "@//third_party:libxml.BUILD",
     patch_cmds_win = [
-        """sed -i 's/define LIBXML_ICONV_ENABLED//g' include/libxml/xmlversion.h""",
+        """sed -i 's/define LIBXML_ICONV_ENABLED/undef LIBXML_ICONV_ENABLED/g' include/libxml/xmlversion.h""",
+        """sed -i 's/define LIBXML_LZMA_ENABLED/undef LIBXML_LZMA_ENABLED/g' include/libxml/xmlversion.h""",
     ],
     sha256 = "f63c5e7d30362ed28b38bfa1ac6313f9a80230720b7fb6c80575eeab3ff5900c",
     strip_prefix = "libxml2-2.9.7",
