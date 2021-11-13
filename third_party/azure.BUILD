@@ -36,7 +36,12 @@ cc_library(
         "sdk/storage/azure-storage-common/inc/azure/storage/common/internal/*.hpp",
         "sdk/storage/azure-storage-common/src/*.cpp",
         "sdk/storage/azure-storage-common/src/private/*.hpp",
-    ]),
+    ]) + select({
+        "@bazel_tools//src/conditions:windows": [
+            "sdk/core/azure-core/src/http/winhttp/win_http_transport.cpp",
+        ],
+        "//conditions:default": [],
+    }),
     hdrs = [],
     defines = [] + select({
         "@bazel_tools//src/conditions:windows": [
