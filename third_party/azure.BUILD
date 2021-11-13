@@ -53,7 +53,9 @@ cc_library(
     ],
     linkopts = select({
         "@bazel_tools//src/conditions:windows": [
+            "-DEFAULTLIB:Bcrypt.lib",
             "-DEFAULTLIB:Crypt32.lib",
+            "-DEFAULTLIB:WebServices.lib",
         ],
         "//conditions:default": [],
     }),
