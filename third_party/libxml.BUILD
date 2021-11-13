@@ -57,9 +57,12 @@ cc_library(
         exclude = [],
     ),
     copts = [
-        "-D_REENTRANT",
-        "-DHAVE_CONFIG_H",
         "-w",
+    ],
+    defines = [
+        "_REENTRANT",
+        "HAVE_CONFIG_H",
+        "WIN32_LEAN_AND_MEAN",
     ],
     includes = [
         ".",
