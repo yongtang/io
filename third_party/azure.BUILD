@@ -61,6 +61,7 @@ cc_library(
             "-DEFAULTLIB:Bcrypt.lib",
             "-DEFAULTLIB:Crypt32.lib",
             "-DEFAULTLIB:WebServices.lib",
+            "-DEFAULTLIB:Winhttp.lib",
         ],
         "//conditions:default": [],
     }),
