@@ -206,7 +206,7 @@ jobs:
     name: Bazel Linux
     runs-on: ubuntu-latest
     container:
-      image: gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010
+      image: tensorflow/build:2.8-python3.9
       env:
         REPO_NAME: ${{ env.REPO_NAME }}
         EVENT_NAME: ${{ env.EVENT_NAME }}
@@ -225,7 +225,7 @@ jobs:
           if [[ "${EVENT_NAME}" == "push" && "${REPO_NAME}" == "tensorflow/io" ]]; then
             export BAZEL_OPTIMIZATION="$BAZEL_OPTIMIZATION --remote_upload_local_results=true --google_credentials=service_account_creds.json"
           fi
-          bash -x -e .github/workflows/build.bazel.sh python3.8
+          bash -x -e .github/workflows/build.bazel.sh python3.9
           sudo cp .bazelrc build/tensorflow_io/
       - uses: actions/upload-artifact@v2
         with:
