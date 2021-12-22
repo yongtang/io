@@ -123,6 +123,7 @@ class KafkaIOLayerHelper:
         assert len(lines) == len(images)
 
 
+@pytest.mark.skip(reason="TODO")
 @pytest.mark.parametrize(
     ("helper"),
     [
