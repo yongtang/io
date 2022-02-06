@@ -16,5 +16,7 @@ jobs:
       - run: git tag
       - run: git shortlog "v0.23.0..HEAD" -s
       - run: python3 tools/release/note_create.py
+      - run: git diff
       - run: python3 tools/release/note_update.py
+      - run: git diff
       - uses: peter-evans/create-pull-request@v3
