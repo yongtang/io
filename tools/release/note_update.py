@@ -23,7 +23,7 @@ logs = subprocess.run(
     capture_output=True,
     check=False,
 ).stdout.decode("utf-8")
-print("LOGS: ", logs)
+
 authors = [e.split("\t")[1].strip() for e in logs.rstrip().split("\n")]
 # Replace " " with "@" to allow text wrap without break names, then replace back
 authors = textwrap.fill(", ".join([e.replace(" ", "@") for e in authors]), 80).replace(
