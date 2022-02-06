@@ -21,9 +21,6 @@ jobs:
       - uses: peter-evans/create-pull-request@v3
         with:
           commit-message: Update RELEASE.md [bot]
-          committer: GitHub <noreply@github.com>
-          author: GitHub <noreply@github.com>
-          # author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           branch: bot-RELEASE.md
           delete-branch: true
           title: 'Update RELEASE.md [bot]'
