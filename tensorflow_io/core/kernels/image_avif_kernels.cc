@@ -14,15 +14,19 @@ limitations under the License.
 ==============================================================================*/
 
 #include "avif/avif.h"
+
+
 #include "tensorflow/core/framework/op_kernel.h"
 
 namespace tensorflow {
 namespace io {
+
+
 namespace {
 
 class DecodeAVIFOp : public OpKernel {
  public:
-  explicit DecodeAVIFOp(OpKernelConstruction* context) : OpKernel(context) {}
+      explicit DecodeAVIFOp(OpKernelConstruction* context) : OpKernel(context) {}
 
   void Compute(OpKernelContext* context) override {
     const Tensor& contents_tensor = context->input(0);

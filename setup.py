@@ -31,7 +31,7 @@ with open(os.path.join(here, "tensorflow_io/python/ops/version_ops.py")) as f:
     assert sum(e.startswith("require = ") for e in entries) == 1
     version = list(e[10:] for e in entries if e.startswith("version = "))[0].strip('"')
     require = list(e[10:] for e in entries if e.startswith("require = "))[0].strip('"')
-    assert version != ""
+    assert version  !=    ""
     assert require != ""
 
 if "--install-require" in sys.argv:
