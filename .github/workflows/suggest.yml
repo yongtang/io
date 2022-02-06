@@ -1,0 +1,17 @@
+name: Review Suggest
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  black:
+    name: Python Black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: black .
+      - uses: reviewdog/action-suggester@v1
+        with:
+          tool_name: blackfmt
