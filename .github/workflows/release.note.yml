@@ -1,0 +1,18 @@
+name: RELEASE.md update
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: Release Note Update
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - run: python3 tools/release/note_create.py
+      - run: python3 tools/release/note_update.py
+      - uses: peter-evans/create-pull-request@v3
