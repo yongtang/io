@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  release:
+  note:
     name: README.md
     runs-on: ubuntu-latest
     steps:
@@ -26,3 +26,15 @@ jobs:
           title: 'Update RELEASE.md [bot]'
           body: |
             README.md: auto-updated by .github/workflows/release.yml
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - run: git tag
+      - run: |
+          echo "VERSION: ${{ github.ref }}"
