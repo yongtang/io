@@ -369,7 +369,7 @@ cc_library(
         "@libtiff",
         "@libwebp",
         "@libyuv",
-        "@openexr",
+	"@openexr//:OpenEXR",
         "@openjpeg",
         "@stb",
     ],

@@ -708,14 +708,19 @@ http_archive(
 
 http_archive(
     name = "openexr",
-    build_file = "//third_party:openexr.BUILD",
-    sha256 = "4904c5ea7914a58f60a5e2fbc397be67e7a25c380d7d07c1c31a3eefff1c92f1",
-    strip_prefix = "openexr-2.4.0",
+    sha256 = "cb019c3c69ada47fe340f7fa6c8b863ca0515804dc60bdb25c942c1da886930b",
+    strip_prefix = "openexr-3.1.4",
     urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/openexr/openexr/archive/v2.4.0.tar.gz",
-        "https://github.com/openexr/openexr/archive/v2.4.0.tar.gz",
+        "https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.1.4.tar.gz",
     ],
+    repo_mapping = {
+       "@net_zlib_zlib": "@zlib",
+   },
 )
+
+load("@openexr//:bazel/third_party/openexr_deps.bzl", "openexr_deps")
+
+openexr_deps()
 
 http_archive(
     name = "openjpeg",
