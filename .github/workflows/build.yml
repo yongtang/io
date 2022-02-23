@@ -437,7 +437,7 @@ jobs:
     name: Release
     if: github.event_name == 'push'
     needs: [linux-wheel, macos-wheel, windows-wheel]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v1
         with:
@@ -513,7 +513,7 @@ jobs:
     name: Release Candidate
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: [lint, release]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v1
@@ -553,7 +553,7 @@ jobs:
     name: Docker Release
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: [lint, linux-test, macos-test, windows-test]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -574,7 +574,7 @@ jobs:
   build-number:
     name: Build Number
     if: github.event_name == 'push'
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - run: |
           set -e -x
@@ -713,7 +713,7 @@ jobs:
     name: Nightly
     if: github.event_name == 'push'
     needs: [linux-nightly, macos-nightly, windows-nightly]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v1
         with:
@@ -811,7 +811,7 @@ jobs:
     name: Docker Nightly
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: [linux-nightly, macos-nightly, windows-nightly]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
