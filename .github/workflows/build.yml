@@ -306,6 +306,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: bazelbuild/setup-bazelisk@v1
       #- uses: egor-tensin/vs-shell@v2
       #with:
       #  arch: x64
