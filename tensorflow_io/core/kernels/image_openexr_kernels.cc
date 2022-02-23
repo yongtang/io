@@ -13,7 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include <IexNamespace.h>
 #include <ImfChannelList.h>
+#include <ImfIO.h>
+#include <ImfInt64.h>
 #include <ImfInputPart.h>
 #include <ImfMultiPartInputFile.h>
 
