@@ -143,6 +143,22 @@ tf_configure(name = "local_config_tf")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+_RULES_BOOST_COMMIT = "652b21e35e4eeed5579e696da0facbe8dba52b1f"
+
+http_archive(
+    name = "com_github_nelhage_rules_boost",
+    sha256 = "c1b8b2adc3b4201683cf94dda7eef3fc0f4f4c0ea5caa3ed3feffe07e1fb5b15",
+    strip_prefix = "rules_boost-%s" % _RULES_BOOST_COMMIT,
+    urls = [
+        "https://github.com/nelhage/rules_boost/archive/%s.tar.gz" % _RULES_BOOST_COMMIT,
+    ],
+)
+
+load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+boost_deps()
+
 http_archive(
     name = "aliyun_oss_c_sdk",
     build_file = "//third_party:oss_c_sdk.BUILD",
@@ -226,19 +242,6 @@ http_archive(
     urls = [
         "https://storage.googleapis.com/mirror.tensorflow.org/github.com/aws/aws-sdk-cpp/archive/1.8.186.tar.gz",
         "https://github.com/aws/aws-sdk-cpp/archive/1.8.186.tar.gz",
-    ],
-)
-
-http_archive(
-    name = "boost",
-    build_file = "//third_party:boost.BUILD",
-    sha256 = "c66e88d5786f2ca4dbebb14e06b566fb642a1a6947ad8cc9091f9f445134143f",
-    strip_prefix = "boost_1_72_0",
-    urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz",
-        "https://storage.googleapis.com/mirror.tensorflow.org/downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz",
-        "https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz",
-        "https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.gz",
     ],
 )
 
