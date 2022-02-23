@@ -306,9 +306,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: egor-tensin/vs-shell@v2
-        with:
-          arch: x64
+      #- uses: egor-tensin/vs-shell@v2
+      #with:
+      #  arch: x64
       - name: GCP
         shell: bash
         run: |
