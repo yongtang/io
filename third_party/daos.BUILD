@@ -2,6 +2,20 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "daos",
+    srcs = glob(
+        [
+            "src/client/dfus/*.c",
+            "src/client/dfus/*.h",
+            "src/client/dfs/*.c",
+            "src/client/dfs/*.h",
+            "src/client/array/*.c",
+            "src/client/array/*.h",
+            "src/gurt/*.c",
+            "src/gurt/*.h",
+        ],
+        exclude = [
+        ],
+    ),
     hdrs = glob(
         [
             "src/include/**/*.h",
@@ -10,8 +24,18 @@ cc_library(
         "src/include/daos_version.h",
     ],
     copts = [],
-    includes = ["src/include"],
+    defines = [
+        "_POSIX_SOURCE",
+        "_POSIX_C_SOURCE=200809L",
+        "_DEFAULT_SOURCE",
+    ],
+    includes = [
+        "src/client/dfs",
+        "src/gurt",
+        "src/include",
+    ],
     deps = [
+        "@boost",
         "@util_linux//:uuid",
     ],
 )
