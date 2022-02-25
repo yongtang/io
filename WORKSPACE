@@ -306,6 +306,28 @@ http_archive(
 )
 
 http_archive(
+    name = "libyaml",
+    build_file = "//third_party:libyaml.BUILD",
+    sha256 = "fa240dbf262be053f3898006d502d514936c818e422afdcf33921c63bed9bf2e",
+    strip_prefix = "libyaml-0.2.5",
+    urls = [
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/yaml/libyaml/archive/refs/tags/0.2.5.tar.gz",
+        "https://github.com/yaml/libyaml/archive/refs/tags/0.2.5.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "protobuf-c",
+    build_file = "//third_party:protobuf-c.BUILD",
+    sha256 = "1068bca1e9870e9492096f97c409cd15f10c5019c183e52ec6d53e8d18630cbf",
+    strip_prefix = "protobuf-c-1.4.0",
+    urls = [
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/protobuf-c/protobuf-c/archive/refs/tags/v1.4.0.tar.gz",
+        "https://github.com/protobuf-c/protobuf-c/archive/refs/tags/v1.4.0.tar.gz",
+    ],
+)
+
+http_archive(
     name = "dav1d",
     build_file = "//third_party:dav1d.BUILD",
     patch_cmds = [
