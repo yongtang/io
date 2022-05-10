@@ -16,10 +16,6 @@ cc_library(
     ],
     copts = tf_io_copts(),
     linkopts = [
-        "-ldaos",
-        "-luuid",
-        "-ldfs",
-        "-lduns",
     ],
     linkstatic = True,
     deps = [
