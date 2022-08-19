@@ -51,6 +51,25 @@ genrule(
 )
 
 cc_library(
+    name = "arrow_musl",
+    srcs = glob(
+        [
+            "cpp/src/arrow/vendored/musl/strptime.c",
+            "cpp/src/arrow/vendored/strptime.h",
+        ],
+        exclude = [],
+    ),
+    hdrs = [],
+    copts = [],
+    defines = [
+        "WIN32_LEAN_AND_MEAN",
+    ],
+    includes = [],
+    textual_hdrs = [],
+    deps = [],
+)
+
+cc_library(
     name = "arrow",
     srcs = glob(
         [
@@ -62,7 +81,6 @@ cc_library(
             "cpp/src/arrow/json/*.cc",
             "cpp/src/arrow/tensor/*.cc",
             "cpp/src/arrow/util/*.cc",
-            "cpp/src/arrow/vendored/musl/strptime.c",
             "cpp/src/arrow/vendored/optional.hpp",
             "cpp/src/arrow/vendored/string_view.hpp",
             "cpp/src/arrow/vendored/variant.hpp",
@@ -118,6 +136,7 @@ cc_library(
     ],
     deps = [
         ":arrow_format",
+        ":arrow_musl",
         "@boringssl//:crypto",
         "@brotli",
         "@bzip2",
