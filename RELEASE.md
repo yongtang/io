@@ -7,7 +7,8 @@
 
 This release contains contributions from many people:
 
-372046933, Colin, Yong Tang
+372046933, Colin, Junfan Zhang, Stan Chen, Vignesh Kothapalli, Yong Tang,
+trabenx, yleeeee
 
 We are also grateful to all who filed issues or helped resolve them, asked and
 answered questions, and were part of inspiring discussions.
