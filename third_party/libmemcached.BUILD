@@ -22,7 +22,9 @@ cc_library(
         "config/libhashkit/hashkitcon.h",
         "config/mem_config.h",
     ],
-    copts = [],
+    copts = [
+        "-std=c++14",
+    ],
     includes = [
         ".",
         "config",
