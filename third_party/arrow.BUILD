@@ -64,7 +64,9 @@ cc_library(
     defines = [
         "WIN32_LEAN_AND_MEAN",
     ],
-    includes = [],
+    includes = [
+        "cpp/src",
+    ],
     textual_hdrs = [],
     deps = [],
 )
