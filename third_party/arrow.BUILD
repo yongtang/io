@@ -56,6 +56,7 @@ cc_library(
         [
             "cpp/src/arrow/vendored/musl/strptime.c",
             "cpp/src/arrow/vendored/strptime.h",
+            "cpp/src/arrow/**/*.h",
         ],
         exclude = [],
     ),
