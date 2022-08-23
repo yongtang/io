@@ -22,6 +22,7 @@ flatbuffer_cc_library(
     flatc_args = [
         "--scoped-enums",
         "--gen-object-api",
+        "c++17",
     ],
     out_prefix = "cpp/src/generated/",
 )
