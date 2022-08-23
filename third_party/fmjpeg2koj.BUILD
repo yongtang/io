@@ -12,6 +12,10 @@ cc_library(
         "*.cc",
         "*.cpp",
     ]),
+    copts = [
+        "-Wno-register",
+        "-Wno-error",
+    ],
     includes = [
         "include",
     ],
