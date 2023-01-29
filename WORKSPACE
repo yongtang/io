@@ -95,10 +95,9 @@ switched_rules_by_language(
 # Note rules_python is placed earlier as tensorflow's version is older
 http_archive(
     name = "rules_python",
-    sha256 = "aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161",
+    sha256 = "8c15896f6686beb5c631a4459a3aa8392daccaab805ea899c9d14215074b60ef",
     urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
-        "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
+        "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.17.3.tar.gz",
     ],
 )
 
