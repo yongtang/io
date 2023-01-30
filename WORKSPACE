@@ -100,16 +100,16 @@ http_archive(
     ],
 )
 
-load("@rules_python//python:pip.bzl", "pip_import")
+load("@rules_python//python:pip.bzl", "pip_parse")
 
-pip_import(
+pip_parse(
     name = "lint_dependencies",
     requirements = "//tools/lint:requirements.txt",
 )
 
-load("@lint_dependencies//:requirements.bzl", "pip_install")
+load("@lint_dependencies//:requirements.bzl", "install_deps")
 
-pip_install()
+install_deps()
 
 http_archive(
     name = "org_tensorflow",
