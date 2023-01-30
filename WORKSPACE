@@ -114,7 +114,7 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "lint_dependencies",
-    requirements = "//tools/lint:requirements.txt",
+    requirements_lock = "//tools/lint:requirements.txt",
 )
 
 load("@lint_dependencies//:requirements.bzl", "install_deps")
